@@ -14,7 +14,7 @@ class Program
         
         using (var httpClient = new HttpClient())
         {            
-            try
+            try 
             {
                 
                 HttpResponseMessage response = await httpClient.GetAsync(url);
