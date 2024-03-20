@@ -9,9 +9,23 @@ namespace TelegramSteamTrade_Bot
 {
     public class SteamMethod
     {
+        public int GameID { get; set; }
+        public string ItemName { get; set; }
+        public double ItemLowestPrice { get; set; }
 
-        public async Task SearchItemPriceAsync(int gameId, string itemName)
-        {           
+        public SteamMethod()
+        {
+
+        }
+        public SteamMethod(int gameID, string itemName, double itemLowestPrice)
+        {
+            GameID = gameID;
+            ItemName = itemName;
+            ItemLowestPrice = itemLowestPrice;
+        }
+
+        public async Task<double> SearchItemPriceAsync(int gameId, string itemName)
+        {
             string url = $"https://steamcommunity.com/market/priceoverview/?appid={gameId}&currency=5&market_hash_name={Uri.EscapeDataString(itemName)}";
             double res = 0.0;
 
@@ -29,21 +43,27 @@ namespace TelegramSteamTrade_Bot
                         if (jsonResponse != null)
                         {
                             var lowestPrice = jsonResponse.lowest_price.ToString();
-                            bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out res);
-                            Console.WriteLine($"Response Content: item name {itemName} : {res} руб.");
+                            bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out res);                           
+                            GameID = gameId;
+                            ItemName = itemName;
+                            ItemLowestPrice = res;
+                            return res;
                         }
 
                     }
                     else
                     {
                         Console.WriteLine($"Такого предмета не существует");
+                        return res;
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error: {ex.Message}");
+                    return res;
                 }
             }
+            return res;
         }
     }
     public class GetRequestFields
