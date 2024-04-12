@@ -12,11 +12,7 @@ namespace TelegramSteamTrade_Bot
         public int GameID { get; set; }
         public string ItemName { get; set; }
         public double ItemLowestPrice { get; set; }
-
-        public SteamMethod()
-        {
-
-        }
+               
         public SteamMethod(int gameID, string itemName, double itemLowestPrice)
         {
             GameID = gameID;

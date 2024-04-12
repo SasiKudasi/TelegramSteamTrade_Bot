@@ -1,36 +1,80 @@
-﻿using System;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using TelegramSteamTrade_Bot;
+﻿using TelegramSteamTrade_Bot;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
+using TelegramSteamTrade_Bot.Models;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        string cmd = "";
-        List<SteamMethod> items = new List<SteamMethod>();
-        while (true)
+        var token = System.IO.File.ReadAllText("token.txt");
+        var bot = new TelegramBotClient(token);
+
+        var receiver = new ReceiverOptions
         {
-            int gameId = ChoseTheGame();
-            string gameItem = ChoseGameItem();
-            SteamMethod steam = new();
-            await steam.SearchItemPriceAsync(gameId, gameItem);
-            Console.WriteLine($"Предмет {steam.ItemName} стоит: {steam.ItemLowestPrice} руб\nХотите ли вы добавить этот предмет для отслеживания его цены?");
-            cmd = Console.ReadLine();
-            if (cmd == "Да")
-            {
-                items.Add(new SteamMethod(steam.GameID, steam.ItemName, steam.ItemLowestPrice));
-                foreach (SteamMethod item in items)
-                {
-                    double newPrice = await steam.SearchItemPriceAsync(item.GameID, item.ItemName);
-                    Console.WriteLine($"{item.GameID} Предмет {item.ItemName} стоил на момент добавления: {item.ItemLowestPrice} \nЕго актуальная цена {newPrice}");
-                }
-            }
-        }
+            AllowedUpdates = new Telegram.Bot.Types.Enums.UpdateType[] { },
+        };
+        bot.StartReceiving(updateHandler: Handler, pollingErrorHandler: ErrorHandler, receiverOptions: receiver);
+        Console.ReadLine();
+        //  string cmd = "";
+        //List<SteamMethod> items = new List<SteamMethod>();
+        //while (true)
+        //{
+        //    int gameId = ChoseTheGame();
+        //    string gameItem = ChoseGameItem();
+        //    SteamMethod steam = new();
+        //    await steam.SearchItemPriceAsync(gameId, gameItem);
+        //    Console.WriteLine($"Предмет {steam.ItemName} стоит: {steam.ItemLowestPrice} руб\nХотите ли вы добавить этот предмет для отслеживания его цены?");
+        //    cmd = Console.ReadLine();
+        //    if (cmd == "Да")
+        //    {
+        //        items.Add(new SteamMethod(steam.GameID, steam.ItemName, steam.ItemLowestPrice));
+        //        foreach (SteamMethod item in items)
+        //        {
+        //            double newPrice = await steam.SearchItemPriceAsync(item.GameID, item.ItemName);
+        //            Console.WriteLine($"{item.GameID} Предмет {item.ItemName} стоил на момент добавления: {item.ItemLowestPrice} \nЕго актуальная цена {newPrice}");
+        //        }
+        //    }
+
 
 
     }
+    private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    {
+        long person = update.Id;
+        Mode mode = Data.GetMode(person);
+        if (mode == null)
+        {
+            Data.SetState(person, Mode.Start);
+        }
+        else
+        {
+            switch (mode)
+            {
+
+                case Mode.Start:
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
+                        "Пожалуйста, выбери игру, цены на предметы которой ты хочешь посмотреть (/chouse_game)");
+                    Data.SetState(person, Mode.ChouseGame);
+                    break;
+                case Mode.ChouseGame:
+                    break;
+                case Mode.AddItem:
+                    break;
+                case Mode.GetItem:
+                    break;
+                case Mode.GetAllItem:
+                    break;
+            }
+        }
+    }
+
+    private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
+
 
     static int ChoseTheGame()
     {
