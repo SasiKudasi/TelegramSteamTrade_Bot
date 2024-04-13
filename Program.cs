@@ -41,7 +41,7 @@ class Program
         long person = update.Id;
         if (!Data.GetUser(person))
         {
-            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, поэалуйста попробуйте позднее");
+            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее");
         }
         else
         {
@@ -50,7 +50,7 @@ class Program
             {
                 case Mode.Start:
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-                        "Пожалуйста, выбери игру, цены на предметы которой ты хочешь посмотреть (/chouse_game)");
+                        "Пожалуйста, выбери игру, цены на предметы которой ты хочешь посмотреть \n/chouse_game");
                     Data.SetState(person, Mode.ChouseGame);
                     break;
                 case Mode.ChouseGame:
@@ -67,7 +67,6 @@ class Program
                     break;
             }
         }
-
     }
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)

@@ -21,8 +21,6 @@ namespace TelegramSteamTrade_Bot
         public static bool GetUser(long person)
         {
             var user = _db.Users.FirstOrDefault(x => x.Id == person);
-
-
             Console.WriteLine(user);
             if (user == null)
             {
@@ -44,7 +42,8 @@ namespace TelegramSteamTrade_Bot
 
         public static void SetState(long person, Mode mode)
         {
-            
+            _db.Users.Where(p=>p.ChatId ==person)
+                .Set(m=>m.Mode, mode).Update();
         }
     }
 }
