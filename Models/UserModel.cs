@@ -1,5 +1,4 @@
 ﻿using LinqToDB.Mapping;
-using System.Runtime.Serialization;
 
 namespace TelegramSteamTrade_Bot.Models
 {

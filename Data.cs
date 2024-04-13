@@ -1,12 +1,5 @@
 ﻿using LinqToDB;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using TelegramSteamTrade_Bot.Models;
 using static LinqToDB.Reflection.Methods.LinqToDB;
 using Update = Telegram.Bot.Types.Update;
@@ -165,7 +158,6 @@ namespace TelegramSteamTrade_Bot
               .Set(m => m.ItemPrice, price).Update();
             }
             return price;
-
         }
 
         private static void CreateNewItem(int v, string? msg)
