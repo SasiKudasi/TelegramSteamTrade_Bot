@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LinqToDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,12 +14,37 @@ namespace TelegramSteamTrade_Bot
 
         internal static Mode GetMode(long person)
         {
-            throw new NotImplementedException();
+            var mode = _db.Users.FirstOrDefault(u => u.ChatId == person);           
+            return mode.Mode;
         }
 
-        internal static void SetState(long person, Mode start)
+        public static bool GetUser(long person)
         {
-            throw new NotImplementedException();
+            var user = _db.Users.FirstOrDefault(x => x.Id == person);
+
+
+            Console.WriteLine(user);
+            if (user == null)
+            {
+                CreateNewUser(person);
+            }
+            return true;
+
+        }
+
+        private static void CreateNewUser(long person)
+        {
+            var newUser = new UserModel()
+            {
+                ChatId = person,
+                Mode = Mode.Start
+            };
+            _db.InsertWithIdentity(newUser);
+        }
+
+        public static void SetState(long person, Mode mode)
+        {
+            
         }
     }
 }

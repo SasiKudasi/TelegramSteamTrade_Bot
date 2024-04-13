@@ -1,4 +1,5 @@
 ﻿using LinqToDB.Mapping;
+using System.Runtime.Serialization;
 
 namespace TelegramSteamTrade_Bot.Models
 {
@@ -10,22 +11,22 @@ namespace TelegramSteamTrade_Bot.Models
         public int Id { get; set; }
         [Column("chatid")]
         public long ChatId { get; set; }
-        [Column("itemid")]
-        public int ItemId { get; set; }
-        [Column("gameid")]
-        public int GameId { get; set; }
-        [Column("oldprice")]
-        public double OldPrice { get; set; }
-        [Column("userstate")]
+
+        [Column(Name = "userstate"), DataType(LinqToDB.DataType.VarChar)]
         public Mode Mode { get; set; }
     }
 
     public enum Mode
     {
-        Start = 1,
-        ChouseGame = 2,
-        AddItem = 3,
-        GetItem = 4,
-        GetAllItem = 5
+        [MapValue(Value = "Start")]
+        Start,
+        [MapValue(Value = "ChouseGame")]
+        ChouseGame,
+        [MapValue(Value = "AddItem")]
+        AddItem,
+        [MapValue(Value = "GetItem")]
+        GetItem,
+        [MapValue(Value = "GetAllItem")]
+        GetAllItem
     }
 }

@@ -35,38 +35,39 @@ class Program
         //            Console.WriteLine($"{item.GameID} Предмет {item.ItemName} стоил на момент добавления: {item.ItemLowestPrice} \nЕго актуальная цена {newPrice}");
         //        }
         //    }
-
-
-
     }
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
         long person = update.Id;
-        Mode mode = Data.GetMode(person);
-        if (mode == null)
+        if (!Data.GetUser(person))
         {
-            Data.SetState(person, Mode.Start);
+            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, поэалуйста попробуйте позднее");
         }
         else
         {
+            var mode = Data.GetMode(person);
             switch (mode)
             {
-
                 case Mode.Start:
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
                         "Пожалуйста, выбери игру, цены на предметы которой ты хочешь посмотреть (/chouse_game)");
                     Data.SetState(person, Mode.ChouseGame);
                     break;
                 case Mode.ChouseGame:
+                    Data.SetState(person, Mode.Start);
                     break;
                 case Mode.AddItem:
+                    Data.SetState(person, Mode.Start);
                     break;
                 case Mode.GetItem:
+                    Data.SetState(person, Mode.Start);
                     break;
                 case Mode.GetAllItem:
+                    Data.SetState(person, Mode.Start);
                     break;
             }
         }
+
     }
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
