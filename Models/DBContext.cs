@@ -17,5 +17,6 @@ namespace TelegramSteamTrade_Bot.Models
         public ITable<GameModel> Games => this.GetTable<GameModel>();
         public ITable<UserModel> Users => this.GetTable<UserModel>();
         public ITable<ItemModel> Items => this.GetTable<ItemModel>();
+        public ITable<TrackModel> Track => this.GetTable<TrackModel>();
     }
 }
