@@ -4,16 +4,8 @@ namespace TelegramSteamTrade_Bot
 {
     public class SteamMethod
     {
-        public int GameID { get; set; }
-        public string ItemName { get; set; }
         public double ItemLowestPrice { get; set; }
-        public SteamMethod() { }
-        public SteamMethod(int gameID, string itemName, double itemLowestPrice)
-        {
-            GameID = gameID;
-            ItemName = itemName;
-            ItemLowestPrice = itemLowestPrice;
-        }
+
 
         public async Task<double> SearchItemPriceAsync(int gameId, string itemName)
         {
@@ -34,24 +26,19 @@ namespace TelegramSteamTrade_Bot
                         {
                             var lowestPrice = jsonResponse.lowest_price.ToString();
                             bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out res);
-                            GameID = gameId;
-                            ItemName = itemName;
                             ItemLowestPrice = res;
                             return res;
                         }
-
                     }
-                    else
-                    {
-                        return 0.0;
-                    }
+                    else                   
+                        return 0.0;                    
                 }
                 catch
                 {
                     return 0.0;
                 }
-            }
-            return res;
+                return res;
+            }         
         }
     }
     public class GetRequestFields
