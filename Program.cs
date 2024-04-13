@@ -38,35 +38,41 @@ class Program
     }
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        long person = update.Id;
+        long person = update.Message.Chat.Id;
         if (!Data.GetUser(person))
         {
             await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее");
         }
         else
         {
-            var mode = Data.GetMode(person);
+            await Data.SetStateAsync(client, update, token);
+            var mode = Data.GetModeMain(person);
             switch (mode)
             {
-                case Mode.Start:
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-                        "Пожалуйста, выбери игру, цены на предметы которой ты хочешь посмотреть \n/chouse_game");
-                    Data.SetState(person, Mode.ChouseGame);
+                case ModeMain.Start:
+                    await SendMenu(client, update);
                     break;
-                case Mode.ChouseGame:
-                    Data.SetState(person, Mode.Start);
+                case ModeMain.GetItem:
+                    await Data.ItemMenuAsync(client, update, token);
+                    Data.SetState(person, ModeMain.GetItem);
                     break;
-                case Mode.AddItem:
-                    Data.SetState(person, Mode.Start);
+                case ModeMain.AddItem:
+                    Data.SetState(person, ModeMain.Start);
                     break;
-                case Mode.GetItem:
-                    Data.SetState(person, Mode.Start);
-                    break;
-                case Mode.GetAllItem:
-                    Data.SetState(person, Mode.Start);
+                case ModeMain.GetAllItem:
+                    Data.SetState(person, ModeMain.Start);
                     break;
             }
         }
+    }
+
+    private static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update)
+    {
+        await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
+            "/check_item_price - если ты просто хочешь посмотреть цену на определенный предмет.\n" +
+            "/add_item_to_track - если ты хочешь отслеживать его цену.\n" +
+            "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
+            "/start - для возврата в главное меню.");
     }
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
@@ -74,26 +80,6 @@ class Program
         throw new NotImplementedException();
     }
 
-
-
-    static int ChoseTheGame()
-    {
-        Console.WriteLine("Выберите игру");
-        string game = Console.ReadLine();
-        int gameId = 0;
-        switch (game)
-        {
-            case "CS2":
-                gameId = 730;
-                break;
-            case "Dota2":
-                gameId = 570;
-                break;
-            default:
-                break;
-        }
-        return gameId;
-    }
     static string ChoseGameItem()
     {
         Console.WriteLine("Введите название предмета\nприм. AK-47 | Redline (Minimal Wear)");

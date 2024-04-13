@@ -12,11 +12,13 @@ namespace TelegramSteamTrade_Bot.Models
         [Column("chatid")]
         public long ChatId { get; set; }
 
-        [Column(Name = "userstate"), DataType(LinqToDB.DataType.VarChar)]
-        public Mode Mode { get; set; }
+        [Column(Name = "userstatemain"), DataType(LinqToDB.DataType.VarChar)]
+        public ModeMain ModeMain { get; set; }
+        [Column(Name = "userstategame"), DataType(LinqToDB.DataType.VarChar)]
+        public ModeGame ModeGame { get; set; }
     }
 
-    public enum Mode
+    public enum ModeMain
     {
         [MapValue(Value = "Start")]
         Start,
@@ -28,5 +30,15 @@ namespace TelegramSteamTrade_Bot.Models
         GetItem,
         [MapValue(Value = "GetAllItem")]
         GetAllItem
+    }
+
+    public enum ModeGame
+    {
+        [MapValue(Value = "Initial")]
+        Initial,
+        [MapValue(Value = "GetCSItems")]
+        GetCSItems,
+        [MapValue(Value = "GetDotaItems")]
+        GetDotaItems
     }
 }

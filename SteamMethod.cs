@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace TelegramSteamTrade_Bot
 {
@@ -12,7 +7,7 @@ namespace TelegramSteamTrade_Bot
         public int GameID { get; set; }
         public string ItemName { get; set; }
         public double ItemLowestPrice { get; set; }
-               
+        public SteamMethod() { }
         public SteamMethod(int gameID, string itemName, double itemLowestPrice)
         {
             GameID = gameID;
@@ -29,7 +24,6 @@ namespace TelegramSteamTrade_Bot
             {
                 try
                 {
-
                     HttpResponseMessage response = await httpClient.GetAsync(url);
 
                     if (response.IsSuccessStatusCode)
@@ -39,7 +33,7 @@ namespace TelegramSteamTrade_Bot
                         if (jsonResponse != null)
                         {
                             var lowestPrice = jsonResponse.lowest_price.ToString();
-                            bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out res);                           
+                            bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out res);
                             GameID = gameId;
                             ItemName = itemName;
                             ItemLowestPrice = res;
@@ -49,14 +43,12 @@ namespace TelegramSteamTrade_Bot
                     }
                     else
                     {
-                        Console.WriteLine($"Такого предмета не существует");
-                        return res;
+                        return 0.0;
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
-                    return res;
+                    return 0.0;
                 }
             }
             return res;
