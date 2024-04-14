@@ -12,7 +12,7 @@ namespace TelegramSteamTrade_Bot.Data
         private SteamMethod _steam = new();
 
         private GamesData _gamesData = new();
-        public bool GetUser(long person)
+        public UserModel GetUser(long person)
         {
             var user = _db.Users.FirstOrDefault(x => x.ChatId == person);
 
@@ -20,10 +20,10 @@ namespace TelegramSteamTrade_Bot.Data
             {
                 CreateNewUser(person);
             }
-            return true;
+            return user;
         }
 
-        private void CreateNewUser(long person)
+        private UserModel CreateNewUser(long person)
         {
             var newUser = new UserModel()
             {
@@ -32,6 +32,7 @@ namespace TelegramSteamTrade_Bot.Data
                 ModeGame = ModeGame.Initial
             };
             _db.InsertWithIdentity(newUser);
+            return newUser;
         }
         public async Task SetStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
@@ -47,7 +48,7 @@ namespace TelegramSteamTrade_Bot.Data
                     SetState(person, ModeMain.Start);
                     break;
                 case "/check_tracking_item":
-                    SetState(person, ModeMain.Start);
+                    SetState(person, ModeMain.GetAllItem);
                     break;
                 case "/check_item_price":
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Выберите игру, предметы которой хотите посмотерть", cancellationToken: token);

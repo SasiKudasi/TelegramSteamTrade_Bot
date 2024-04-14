@@ -11,7 +11,9 @@ namespace TelegramSteamTrade_Bot.Data
         private SteamMethod _steam = new();
         private DbContext _db = new();
         private GamesData _gamesData = new();
-        private void CreateNewItem(int v, string? msg)
+        private TracksData _tracksData = new TracksData();
+        private UsersData _userData = new UsersData();
+        private ItemModel CreateNewItem(int v, string? msg)
         {
             var item = new ItemModel()
             {
@@ -19,6 +21,7 @@ namespace TelegramSteamTrade_Bot.Data
                 GameId = v,
             };
             _db.InsertWithIdentity(item);
+            return item;
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
@@ -39,8 +42,10 @@ namespace TelegramSteamTrade_Bot.Data
                             SetState(update.Message.Chat.Id, ModeGame.GetDotaItems);
                             break;
                     }
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
-                        "\nприм. AK-47 | Redline (Minimal Wear)", cancellationToken: token);
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                        "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
+                        "\nприм. AK-47 | Redline (Minimal Wear)",
+                        cancellationToken: token);
                 }
                 else
                 {
@@ -59,6 +64,7 @@ namespace TelegramSteamTrade_Bot.Data
 
         private async void GetItems(ITelegramBotClient client, Update update, CancellationToken token, int v)
         {
+            var person = update.Message.Chat.Id;
             var msg = update.Message!.Text;
             if (msg == "/cs2" || msg == "/dota2")
                 return;
@@ -68,31 +74,38 @@ namespace TelegramSteamTrade_Bot.Data
                 var items = _db.Items.FirstOrDefault(n => n.Name == msg);
                 if (items == null)
                 {
-                    CreateNewItem(v, msg);
+                    items = CreateNewItem(v, msg);
                     price = await CheckItem(client, update, token, v);
-                    SetState(update.Message.Chat.Id, ModeGame.Initial);
+                    _tracksData.NewTrack(items, _userData.GetUser(person));
+                    SetState(person, ModeGame.Initial);
                 }
                 else
                 {
                     price = await CheckItem(client, update, token, v);
-                    SetState(update.Message.Chat.Id, ModeGame.Initial);
+                    _tracksData.NewTrack(items, _userData.GetUser(person));
+                    SetState(person, ModeGame.Initial);
                 }
             }
         }
 
         private async Task<double> CheckItem(ITelegramBotClient client, Update update, CancellationToken token, int v)
         {
+            var person = update.Message.Chat.Id;
             var msg = update.Message!.Text;
             var price = 0.0;
             price = await _steam.SearchItemPriceAsync(v, msg!);
             if (_steam.ItemLowestPrice == 0.0)
             {
-                await client.SendTextMessageAsync(update.Message!.Chat.Id, "Похоже такого предмета не существует", cancellationToken: token);
+                await client.SendTextMessageAsync(person,
+                    "Похоже такой предмет на торговой площадке Steam отсутствует.\nПопробуйте еще раз.",
+                    cancellationToken: token);
                 _db.Items.Delete(n => n.Name == msg);
             }
             else
             {
-                await client.SendTextMessageAsync(update.Message!.Chat.Id, $"Актуальная цена {msg} на данный момент составляет {price}", cancellationToken: token);
+                await client.SendTextMessageAsync(person,
+                    $"Актуальная цена {msg} на данный момент составляет {price}"
+                    , cancellationToken: token);
                 _db.Items.Where(p => p.Name == msg)
               .Set(m => m.ItemPrice, price).Update();
             }

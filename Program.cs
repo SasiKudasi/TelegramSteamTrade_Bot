@@ -7,6 +7,7 @@ class Program
 {
     private static UsersData _userData = new UsersData();
     private static ItemsData _itemsData = new ItemsData();
+    private static TracksData _tracksData = new TracksData();
     static async Task Main(string[] args)
     {
         var token = System.IO.File.ReadAllText("token.txt");
@@ -17,14 +18,14 @@ class Program
             AllowedUpdates = new Telegram.Bot.Types.Enums.UpdateType[] { },
         };
         bot.StartReceiving(updateHandler: Handler, pollingErrorHandler: ErrorHandler, receiverOptions: receiver);
-        Console.ReadLine();        
+        Console.ReadLine();
     }
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
         long person = update.Message.Chat.Id;
-        if (!_userData.GetUser(person))
+        if (_userData.GetUser(person) == null)
         {
-            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее");
+            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее", cancellationToken: token);
         }
         else
         {
@@ -33,34 +34,28 @@ class Program
             switch (mode)
             {
                 case ModeMain.Start:
-                    await SendMenu(client, update);
+                    await _userData.SendMenu(client, update, token);
                     break;
                 case ModeMain.GetItem:
-                   await _itemsData.ItemMenuAsync(client, update,token);
+                    await _itemsData.ItemMenuAsync(client, update, token);
                     _userData.SetState(person, ModeMain.GetItem);
                     break;
                 case ModeMain.AddItem:
+                    _tracksData.AddItem(client, update, token);
                     _userData.SetState(person, ModeMain.Start);
                     break;
                 case ModeMain.GetAllItem:
-                    _userData.SetState(person, ModeMain.Start);
+                   await _tracksData.GetAllItemAsync(_userData.GetUser(person), client, update, token);
                     break;
             }
         }
     }
 
-    private static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update)
-    {
-        await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-            "/check_item_price - если ты просто хочешь посмотреть цену на определенный предмет.\n" +
-            "/add_item_to_track - если ты хочешь отслеживать его цену.\n" +
-            "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
-            "/start - для возврата в главное меню.");
-    }
+
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
     {
         throw new NotImplementedException();
-    }       
+    }
 }
 

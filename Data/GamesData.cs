@@ -16,7 +16,6 @@ namespace TelegramSteamTrade_Bot.Data
                 await client.SendTextMessageAsync(update.Message!.Chat.Id, $"{game.Name}\n", cancellationToken: token);
             }
         }
-
         public int GetGameAppId(string? text)
         {
             var gameAppId = _db.Games.FirstOrDefault(gameId => gameId.Name == text)!.AppId;

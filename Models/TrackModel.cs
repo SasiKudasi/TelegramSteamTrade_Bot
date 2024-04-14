@@ -21,8 +21,8 @@ namespace TelegramSteamTrade_Bot.Models
         public double LastActualPrice { get; set; }
 
         [Association(ThisKey = nameof(TrackModel.UserId), OtherKey = nameof(UserModel.Id))]
-        public IEnumerable<UserModel> Product { get; set; } = new List<UserModel>();
+        public IEnumerable<UserModel> Users { get; set; } = new List<UserModel>();
         [Association(ThisKey = nameof(TrackModel.ItemId), OtherKey = nameof(ItemModel.Id))]
-        public IEnumerable<ItemModel> Customers { get; set; } = new List<ItemModel>();
+        public IEnumerable<ItemModel> Items { get; set; } = new List<ItemModel>();
     }
 }
