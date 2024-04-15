@@ -38,13 +38,13 @@ namespace TelegramSteamTrade_Bot.Data
                     Update();
             }
         }
-        public StateModel GetMode(UserModel user)
+        public async Task<StateModel> GetMode(UserModel user)
         {
             var userState = _db.State.FirstOrDefault(x => x.UserId == user.Id);
             if (userState == null)
             {
                 var state = new StateData();
-                userState = state.CreateStateForNewUser(user);
+                userState = await state.CreateStateForNewUser(user);
             }
             return userState!;
         }

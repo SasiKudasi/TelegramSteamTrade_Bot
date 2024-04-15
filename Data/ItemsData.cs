@@ -19,7 +19,7 @@ namespace TelegramSteamTrade_Bot.Data
                 Name = msg!,
                 GameId = v,
             };
-           await _db.InsertWithIdentityAsync(item);
+            await _db.InsertWithIdentityAsync(item);
             item = await _db.Items.FirstOrDefaultAsync(item => item.Name == msg);
             return item;
         }
@@ -29,7 +29,8 @@ namespace TelegramSteamTrade_Bot.Data
             var msg = update.Message!.Text;
             var userChatId = update.Message!.Chat.Id;
             var user = _userData.GetUser(userChatId);
-            var gameMode = GetMode(user).ModeGame;
+            var game = await GetMode(user);
+            var gameMode = game.ModeGame;
             if (msg == "/check_item_price")
                 return;
             else

@@ -30,9 +30,9 @@ class Program
         }
         else
         {
-           
             await _userData.SwitchStateAsync(client, update, token);
-            var mode = _userData.GetMode(user).ModeMain;
+            var userMode = await _userData.GetMode(user);
+            var mode = userMode.ModeMain;
             switch (mode)
             {
                 case ModeMain.Start:
@@ -43,11 +43,11 @@ class Program
                     _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
                 case ModeMain.AddItem:
-                   // _tracksData.AddItem(client, update, token);
+                    // _tracksData.AddItem(client, update, token);
                     _userData.SetState(userChatId, ModeMain.Start);
                     break;
                 case ModeMain.GetAllItem:
-                   await _tracksData.GetAllItemAsync(_userData.GetUser(userChatId), client, update, token);
+                    await _tracksData.GetAllItemAsync(_userData.GetUser(userChatId), client, update, token);
                     _userData.SetState(userChatId, ModeMain.Start);
                     break;
             }

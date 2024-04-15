@@ -8,9 +8,9 @@ using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    internal class StateData: BaseData
+    internal class StateData : BaseData
     {
-        public StateModel CreateStateForNewUser(UserModel newUser)
+        public async Task<StateModel> CreateStateForNewUser(UserModel newUser)
         {
             var state = new StateModel()
             {
@@ -19,8 +19,8 @@ namespace TelegramSteamTrade_Bot.Data
                 ModeGame = ModeGame.Initial,
                 LastItemState = 0
             };
-            _db.InsertWithIdentity(state);
+            await _db.InsertWithIdentityAsync(state);
             return state;
-        }       
+        }
     }
 }

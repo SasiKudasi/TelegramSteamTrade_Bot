@@ -18,9 +18,8 @@ namespace TelegramSteamTrade_Bot.Data
         private SteamMethod _steam = new();
         public async Task AddItemAsync(ITelegramBotClient client, Update update, CancellationToken token, UserModel user)
         {
-
-            var userParams = GetMode(user);
-            var item = _db.Items.FirstOrDefault(n => n.Id == userParams.LastItemState);
+            var userParams = await GetMode(user);
+            var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);
             if (GetTrack(user, userParams.LastItemState))
             {
                 var track = new TrackModel()
@@ -78,7 +77,10 @@ namespace TelegramSteamTrade_Bot.Data
                 price = await _steam.SearchItemPriceAsync(item.GameId, item.Name);
                 distinct = PercentProfit(item.LastActualPrice, price);
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                   $"track id {item.Id} itemname {item.Name} lastprice {item.LastActualPrice}, actualprice {price}, изменение в цене {distinct}%",
+                   $"Предмет {item.Name}:\n" +
+                   $"Цена на момент добавления: {item.LastActualPrice},\n" +
+                   $"Актуальная цена: {price}\n" +
+                   $"Изменение в цене: {distinct}%\n",
                    cancellationToken: token);
             }
         }
