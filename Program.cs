@@ -30,8 +30,9 @@ class Program
         }
         else
         {
-            var mode = _userData.GetMode(user).ModeMain;
+           
             await _userData.SwitchStateAsync(client, update, token);
+            var mode = _userData.GetMode(user).ModeMain;
             switch (mode)
             {
                 case ModeMain.Start:

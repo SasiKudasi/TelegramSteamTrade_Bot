@@ -25,7 +25,7 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
-           
+
             var msg = update.Message!.Text;
             var userChatId = update.Message!.Chat.Id;
             var user = _userData.GetUser(userChatId);
@@ -65,7 +65,7 @@ namespace TelegramSteamTrade_Bot.Data
             }
         }
 
-        private async void GetItems(ITelegramBotClient client, Update update, CancellationToken token, int v)
+        private async void GetItems(ITelegramBotClient client, Update update, CancellationToken token, int gameID)
         {
             var person = update.Message!.Chat.Id;
             var msg = update.Message!.Text;
@@ -74,20 +74,21 @@ namespace TelegramSteamTrade_Bot.Data
             else
             {
                 var items = _db.Items.FirstOrDefault(n => n.Name == msg);
-                if (items == null)
-                {
-                    items = CreateNewItem(v, msg);
-                    if (await CheckItem(client, update, token, v))
-                      //  _tracksData.NewTrack(items, _userData.GetUser(person));
-                    SetState(person, ModeGame.Initial);
-                }
-                else
-                {
-                    if (await CheckItem(client, update, token, v))
-                      //  _tracksData.NewTrack(items, _userData.GetUser(person));
-                    SetState(person, ModeGame.Initial);
-                }
+                items = IsItemExists(client, update, gameID, items, token);
+                await CheckItem(client, update, token, gameID);
+                SetState(person, ModeGame.Initial);
             }
+        }
+
+        private ItemModel? IsItemExists(ITelegramBotClient client, Update update, int gameId, ItemModel? items, CancellationToken token)
+        {
+            var person = update.Message!.Chat.Id;
+            var msg = update.Message!.Text;
+            if (items == null)
+            {
+                items = CreateNewItem(gameId, msg);
+            }
+            return items;
         }
 
         private async Task<bool> CheckItem(ITelegramBotClient client, Update update, CancellationToken token, int v)
