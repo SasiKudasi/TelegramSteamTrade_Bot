@@ -25,8 +25,11 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
-            var gameMode = GetModeGame(update.Message.Chat.Id);
+           
             var msg = update.Message!.Text;
+            var userChatId = update.Message!.Chat.Id;
+            var user = _userData.GetUser(userChatId);
+            var gameMode = GetMode(user).ModeGame;
             if (msg == "/check_item_price")
                 return;
             else
@@ -36,13 +39,13 @@ namespace TelegramSteamTrade_Bot.Data
                     switch (msg)
                     {
                         case "/cs2":
-                            SetState(update.Message.Chat.Id, ModeGame.GetCSItems);
+                            SetState(userChatId, ModeGame.GetCSItems);
                             break;
                         case "/dota2":
-                            SetState(update.Message.Chat.Id, ModeGame.GetDotaItems);
+                            SetState(userChatId, ModeGame.GetDotaItems);
                             break;
                     }
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                    await client.SendTextMessageAsync(userChatId,
                         "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
                         "\nприм. AK-47 | Redline (Minimal Wear)",
                         cancellationToken: token);
@@ -64,33 +67,32 @@ namespace TelegramSteamTrade_Bot.Data
 
         private async void GetItems(ITelegramBotClient client, Update update, CancellationToken token, int v)
         {
-            var person = update.Message.Chat.Id;
+            var person = update.Message!.Chat.Id;
             var msg = update.Message!.Text;
             if (msg == "/cs2" || msg == "/dota2")
                 return;
             else
             {
-                var price = 0.0;
                 var items = _db.Items.FirstOrDefault(n => n.Name == msg);
                 if (items == null)
                 {
                     items = CreateNewItem(v, msg);
-                    price = await CheckItem(client, update, token, v);
-                    _tracksData.NewTrack(items, _userData.GetUser(person));
+                    if (await CheckItem(client, update, token, v))
+                      //  _tracksData.NewTrack(items, _userData.GetUser(person));
                     SetState(person, ModeGame.Initial);
                 }
                 else
                 {
-                    price = await CheckItem(client, update, token, v);
-                    _tracksData.NewTrack(items, _userData.GetUser(person));
+                    if (await CheckItem(client, update, token, v))
+                      //  _tracksData.NewTrack(items, _userData.GetUser(person));
                     SetState(person, ModeGame.Initial);
                 }
             }
         }
 
-        private async Task<double> CheckItem(ITelegramBotClient client, Update update, CancellationToken token, int v)
+        private async Task<bool> CheckItem(ITelegramBotClient client, Update update, CancellationToken token, int v)
         {
-            var person = update.Message.Chat.Id;
+            var person = update.Message!.Chat.Id;
             var msg = update.Message!.Text;
             var price = 0.0;
             price = await _steam.SearchItemPriceAsync(v, msg!);
@@ -100,16 +102,21 @@ namespace TelegramSteamTrade_Bot.Data
                     "Похоже такой предмет на торговой площадке Steam отсутствует.\nПопробуйте еще раз.",
                     cancellationToken: token);
                 _db.Items.Delete(n => n.Name == msg);
+                return false;
             }
             else
             {
                 await client.SendTextMessageAsync(person,
-                    $"Актуальная цена {msg} на данный момент составляет {price}"
+                    $"Актуальная цена {msg} на данный момент составляет {price}\n" +
+                    $"Хотите ли вы добавить этот предмет в отслеживаемые предметы?\n" +
+                    $"/yes - что бы добавить данный предмет в отслеживаемые.\n" +
+                    $"/start - что бы вернуться в меню."
                     , cancellationToken: token);
                 _db.Items.Where(p => p.Name == msg)
               .Set(m => m.ItemPrice, price).Update();
+                return true;
             }
-            return price;
+
         }
     }
 }

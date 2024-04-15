@@ -10,17 +10,17 @@ namespace TelegramSteamTrade_Bot.Data
     {
         private DbContext _db = new();
         private SteamMethod _steam = new();
-
         private GamesData _gamesData = new();
+        private StateData _stateData = new StateData();
         public UserModel GetUser(long person)
         {
             var user = _db.Users.FirstOrDefault(x => x.ChatId == person);
 
             if (user == null)
             {
-                CreateNewUser(person);
+                user = CreateNewUser(person);
             }
-            return user;
+            return user!;
         }
 
         private UserModel CreateNewUser(long person)
@@ -28,15 +28,14 @@ namespace TelegramSteamTrade_Bot.Data
             var newUser = new UserModel()
             {
                 ChatId = person,
-                ModeMain = ModeMain.Start,
-                ModeGame = ModeGame.Initial
             };
             _db.InsertWithIdentity(newUser);
+            _stateData.CreateStateForNewUser(newUser);
             return newUser;
         }
-        public async Task SetStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
+        public async Task SwitchStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
-            var msg = update.Message.Text;
+            var msg = update.Message!.Text;
             long person = update.Message.Chat.Id;
             switch (msg)
             {
@@ -55,11 +54,8 @@ namespace TelegramSteamTrade_Bot.Data
                     await _gamesData.GetAllGamesName(client, update, token);
                     SetState(person, ModeMain.GetItem);
                     break;
+
             }
         }
-
-
-
-
     }
 }
