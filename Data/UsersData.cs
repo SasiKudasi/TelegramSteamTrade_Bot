@@ -8,10 +8,9 @@ namespace TelegramSteamTrade_Bot.Data
 {
     public class UsersData : BaseData
     {
-        private DbContext _db = new();
-        private SteamMethod _steam = new();
+        
         private GamesData _gamesData = new();
-        private StateData _stateData = new StateData();
+        private StateData _stateData = new();
         public UserModel GetUser(long person)
         {
             var user = _db.Users.FirstOrDefault(x => x.ChatId == person);

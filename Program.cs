@@ -43,11 +43,12 @@ class Program
                     _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
                 case ModeMain.AddItem:
-                    _tracksData.AddItem(client, update, token);
+                   // _tracksData.AddItem(client, update, token);
                     _userData.SetState(userChatId, ModeMain.Start);
                     break;
                 case ModeMain.GetAllItem:
                    await _tracksData.GetAllItemAsync(_userData.GetUser(userChatId), client, update, token);
+                    _userData.SetState(userChatId, ModeMain.Start);
                     break;
             }
         }

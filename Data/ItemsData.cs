@@ -9,10 +9,9 @@ namespace TelegramSteamTrade_Bot.Data
     public class ItemsData : BaseData
     {
         private SteamMethod _steam = new();
-        private DbContext _db = new();
         private GamesData _gamesData = new();
-        private TracksData _tracksData = new TracksData();
-        private UsersData _userData = new UsersData();
+        private TracksData _tracksData = new();
+        private UsersData _userData = new();
         private ItemModel CreateNewItem(int v, string? msg)
         {
             var item = new ItemModel()
@@ -20,7 +19,8 @@ namespace TelegramSteamTrade_Bot.Data
                 Name = msg!,
                 GameId = v,
             };
-            _db.InsertWithIdentity(item);
+            _db.InsertWithIdentityAsync(item);
+            item = _db.Items.FirstOrDefault(item => item.Name == msg);
             return item;
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
@@ -40,15 +40,23 @@ namespace TelegramSteamTrade_Bot.Data
                     {
                         case "/cs2":
                             SetState(userChatId, ModeGame.GetCSItems);
+                            await client.SendTextMessageAsync(userChatId,
+                                "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
+                                "\nприм. AK-47 | Redline (Minimal Wear)",
+                        cancellationToken: token);
                             break;
                         case "/dota2":
                             SetState(userChatId, ModeGame.GetDotaItems);
+                            await client.SendTextMessageAsync(userChatId,
+                               "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
+                               "\nприм. Totem of Deep Magma",
+                       cancellationToken: token);
+                            break;
+                        case "/yes":
+                            await _tracksData.AddItemAsync(client, update, token, user);
                             break;
                     }
-                    await client.SendTextMessageAsync(userChatId,
-                        "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
-                        "\nприм. AK-47 | Redline (Minimal Wear)",
-                        cancellationToken: token);
+
                 }
                 else
                 {
@@ -76,6 +84,7 @@ namespace TelegramSteamTrade_Bot.Data
                 var items = _db.Items.FirstOrDefault(n => n.Name == msg);
                 items = IsItemExists(client, update, gameID, items, token);
                 await CheckItem(client, update, token, gameID);
+                SetState(person, items.Id);
                 SetState(person, ModeGame.Initial);
             }
         }

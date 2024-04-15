@@ -8,9 +8,8 @@ using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    internal class StateData
+    internal class StateData: BaseData
     {
-        private DbContext _db = new();
         public StateModel CreateStateForNewUser(UserModel newUser)
         {
             var state = new StateModel()
@@ -22,12 +21,6 @@ namespace TelegramSteamTrade_Bot.Data
             };
             _db.InsertWithIdentity(state);
             return state;
-        }
-
-        public StateModel GetMode(UserModel user)
-        {
-           var state = _db.State.FirstOrDefault(x=>x.UserId == user.Id);
-            return state!;
-        }
+        }       
     }
 }

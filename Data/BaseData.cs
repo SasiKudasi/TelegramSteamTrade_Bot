@@ -9,9 +9,7 @@ namespace TelegramSteamTrade_Bot.Data
 {
     public class BaseData
     {
-        private DbContext _db = new();
-
-
+        protected DbContext _db = new();
         public void SetState(long person, object mode)
         {
             var userData = new UsersData();
@@ -58,5 +56,6 @@ namespace TelegramSteamTrade_Bot.Data
                 "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
                 "/start - для возврата в главное меню.", cancellationToken: token);
         }
+
     }
 }
