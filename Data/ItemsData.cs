@@ -12,15 +12,15 @@ namespace TelegramSteamTrade_Bot.Data
         private GamesData _gamesData = new();
         private TracksData _tracksData = new();
         private UsersData _userData = new();
-        private ItemModel CreateNewItem(int v, string? msg)
+        private async Task<ItemModel> CreateNewItem(int v, string? msg)
         {
             var item = new ItemModel()
             {
                 Name = msg!,
                 GameId = v,
             };
-            _db.InsertWithIdentityAsync(item);
-            item = _db.Items.FirstOrDefault(item => item.Name == msg);
+           await _db.InsertWithIdentityAsync(item);
+            item = await _db.Items.FirstOrDefaultAsync(item => item.Name == msg);
             return item;
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
@@ -82,20 +82,20 @@ namespace TelegramSteamTrade_Bot.Data
             else
             {
                 var items = _db.Items.FirstOrDefault(n => n.Name == msg);
-                items = IsItemExists(client, update, gameID, items, token);
+                items = await IsItemExists(client, update, gameID, items, token);
                 await CheckItem(client, update, token, gameID);
                 SetState(person, items.Id);
                 SetState(person, ModeGame.Initial);
             }
         }
 
-        private ItemModel? IsItemExists(ITelegramBotClient client, Update update, int gameId, ItemModel? items, CancellationToken token)
+        private async Task<ItemModel?> IsItemExists(ITelegramBotClient client, Update update, int gameId, ItemModel? items, CancellationToken token)
         {
             var person = update.Message!.Chat.Id;
             var msg = update.Message!.Text;
             if (items == null)
             {
-                items = CreateNewItem(gameId, msg);
+                items = await CreateNewItem(gameId, msg);
             }
             return items;
         }
