@@ -83,17 +83,24 @@ namespace TelegramSteamTrade_Bot.Data
                                 i.GameId,
                                 u.ChatId
                             };
+            int itemNumber = 0;
+            var total = 0.0;
             foreach (var item in userItems)
             {
                 price = await _steam.SearchItemPriceAsync(item.GameId, item.Name);
                 distinct = PercentProfit(item.LastActualPrice, price);
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                   $"Предмет {item.Name}:\n" +
+                   $"{itemNumber}. Предмет {item.Name}:\n" +
                    $"Цена на момент добавления: {item.LastActualPrice},\n" +
                    $"Актуальная цена: {price}\n" +
                    $"Изменение в цене: {distinct}%\n",
                    cancellationToken: token);
+                itemNumber++;
+                total += distinct;
             }
+            await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                  $"Ваш инвентарь изменился на {Math.Round(total, 3)}%",
+                  cancellationToken: token);
         }
         double PercentProfit(double lastPrice, double actualPrice)
         {
@@ -101,6 +108,9 @@ namespace TelegramSteamTrade_Bot.Data
             return Math.Round(result, 3);
         }
 
+        void DeliteTrackingItem(int itemId)
+        {
 
+        }
     }
 }

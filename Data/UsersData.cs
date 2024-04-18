@@ -55,14 +55,13 @@ namespace TelegramSteamTrade_Bot.Data
             long person = update.Message.Chat.Id;
             switch (msg)
             {
-
                 case "/start":
                     await SetState(person, ModeMain.Start);
                     break;
                 case "/add_item_to_track":
                     await SetState(person, ModeMain.Start);
                     break;
-                case "/check_tracking_item":
+                case "/check_tracking_items":
                     await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "/check_item_price":
@@ -70,7 +69,6 @@ namespace TelegramSteamTrade_Bot.Data
                     await _gamesData.GetAllGamesName(client, update, token);
                     await SetState(person, ModeMain.GetItem);
                     break;
-
             }
         }
 

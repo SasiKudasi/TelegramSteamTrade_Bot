@@ -42,8 +42,8 @@ class Program
                     await _itemsData.ItemMenuAsync(client, update, token);
                     await _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
-                case ModeMain.AddItem:
-                    // _tracksData.AddItem(client, update, token);
+                case ModeMain.DeleteItem:
+                    
                     await _userData.SetState(userChatId, ModeMain.Start);
                     break;
                 case ModeMain.GetAllItem:
@@ -57,9 +57,9 @@ class Program
     public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
         await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-            "/check_item_price - если ты просто хочешь посмотреть цену на определенный предмет.\n" +
-            "/add_item_to_track - если ты хочешь отслеживать его цену.\n" +
-            "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
+            "/check_item_price - если ты хочешь посмотреть цену на определенный предмет и добавить его в свой список.\n" +
+            "/check_tracking_items - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
+            "/delete_tracking_item. - если ты хочешь удалить предмет из своего списка отслеживаемых предметов\n" +            
             "/start - для возврата в главное меню.", cancellationToken: token);
     }
 

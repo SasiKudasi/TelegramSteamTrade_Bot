@@ -30,8 +30,8 @@ namespace TelegramSteamTrade_Bot.Models
         Start,
         [MapValue(Value = "ChouseGame")]
         ChouseGame,
-        [MapValue(Value = "AddItem")]
-        AddItem,
+        [MapValue(Value = "DeleteItem")]
+        DeleteItem,
         [MapValue(Value = "GetItem")]
         GetItem,
         [MapValue(Value = "GetAllItem")]
