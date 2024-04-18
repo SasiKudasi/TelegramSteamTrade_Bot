@@ -20,15 +20,25 @@ namespace TelegramSteamTrade_Bot.Data
         {
             await _db.InsertWithIdentityAsync(entity);
         }
-        public Task<T> GetEntity<T>(string name) where T : class
+        public async Task<T> GetEntity<T>(string name) where T : class
         {
-            throw new NotImplementedException();
-        }
+            long person = 0;
+            if (ParsStringIntoLong(name, out person))
+            {
+                var personParams = await _db.State.FirstOrDefaultAsync(x => x.UserId == person);
+                if (personParams != null)
+                {
+                    var result = await _db.Track.FirstOrDefaultAsync(x => x.ItemId == personParams.LastItemState) as T;
+                    return result;
+                }
+            }
+            return null;
+        }        
         public async Task AddItemAsync(ITelegramBotClient client, Update update, CancellationToken token, UserModel user)
         {
             var userParams = await GetMode(user);
-            var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);
-            if (GetTrack(user, userParams.LastItemState))
+            var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);           
+            if (await GetEntity<TrackModel>(user.Id.ToString()) == null)
             {
                 await CreateNewEntity(new TrackModel()
                 {
@@ -52,16 +62,6 @@ namespace TelegramSteamTrade_Bot.Data
                 await SetState(user.ChatId, ModeGame.Initial);
                 await SetState(user.ChatId, ModeMain.Start);
             }
-        }
-
-        private bool GetTrack(UserModel user, int lastItemState)
-        {
-            var track = _db.Track.Where(u => u.UserId == user.Id).
-                FirstOrDefault(x => x.ItemId == lastItemState);
-            if (track == null)
-                return true;
-            else
-                return false;
         }
 
         internal async Task GetAllItemAsync(UserModel userModel, ITelegramBotClient client, Update update, CancellationToken token)
@@ -100,5 +100,7 @@ namespace TelegramSteamTrade_Bot.Data
             var result = ((actualPrice - lastPrice) / lastPrice) * 100;
             return Math.Round(result, 3);
         }
+
+
     }
 }

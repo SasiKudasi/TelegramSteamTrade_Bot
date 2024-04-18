@@ -1,5 +1,6 @@
 ﻿using LinqToDB;
 using LinqToDB.Data;
+using System;
 using Telegram.Bot;
 using TelegramSteamTrade_Bot.Models;
 using static LinqToDB.DataProvider.Access.AccessHints;
@@ -37,6 +38,22 @@ namespace TelegramSteamTrade_Bot.Data
                     UpdateAsync();
             }
         }
+        public bool ParsStringIntoLong(string str, out long nam)
+        {
+            if (str == null)
+            {
+                nam = 0;
+                return false;
+            }
+            else
+            {
+                var id = long.TryParse(str, out nam);
+                if (id)
+                    return true;
+                else
+                    return false;
+            }
+        }
         public async Task<StateModel> GetMode(UserModel user)
         {
             StateData _stateData = new();
@@ -54,5 +71,6 @@ namespace TelegramSteamTrade_Bot.Data
             }
             return userState!;
         }
+
     }
 }
