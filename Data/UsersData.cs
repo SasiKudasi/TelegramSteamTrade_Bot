@@ -1,37 +1,54 @@
 ﻿using LinqToDB;
+using System;
 using Telegram.Bot;
 using TelegramSteamTrade_Bot.Models;
 using static LinqToDB.Reflection.Methods.LinqToDB;
+using static LinqToDB.Reflection.Methods.LinqToDB.Insert;
 using Update = Telegram.Bot.Types.Update;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    public class UsersData : BaseData
+    public class UsersData : BaseData, IWorkerWhithEntity
     {
-        
         private GamesData _gamesData = new();
         private StateData _stateData = new();
-        public UserModel GetUser(long person)
+        public async Task CreateNewEntity<T>(T entity) where T : class
         {
-            var user = _db.Users.FirstOrDefault(x => x.ChatId == person);
-
-            if (user == null)
+            await _db.InsertWithIdentityAsync(entity);
+            var userModel = entity as UserModel;
+            if (userModel != null)
             {
-                user = CreateNewUser(person);
+                await _stateData.CreateNewEntity(new StateModel()
+                {
+                    UserId = userModel.Id,
+                    ModeMain = ModeMain.Start,
+                    ModeGame = ModeGame.Initial,
+                    LastItemState = 0
+                });
             }
-            return user!;
         }
 
-        private UserModel CreateNewUser(long person)
+        public async Task<T> GetEntity<T>(string name) where T : class
         {
-            var newUser = new UserModel()
+            long person = 0;
+            var id = long.TryParse(name, out person);
+            if (id)
             {
-                ChatId = person,
-            };
-            _db.InsertWithIdentity(newUser);
-            _stateData.CreateStateForNewUser(newUser);
-            return newUser;
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.ChatId == person) as T;
+
+                if (user == null)
+                {
+                    await CreateNewEntity(new UserModel()
+                    {
+                        ChatId = person,
+                    });
+                }
+                return user!;
+            }
+            else
+                return null;
         }
+
         public async Task SwitchStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
             var msg = update.Message!.Text;
@@ -40,21 +57,23 @@ namespace TelegramSteamTrade_Bot.Data
             {
 
                 case "/start":
-                    SetState(person, ModeMain.Start);
+                    await SetState(person, ModeMain.Start);
                     break;
                 case "/add_item_to_track":
-                    SetState(person, ModeMain.Start);
+                    await SetState(person, ModeMain.Start);
                     break;
                 case "/check_tracking_item":
-                    SetState(person, ModeMain.GetAllItem);
+                    await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "/check_item_price":
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Выберите игру, предметы которой хотите посмотерть", cancellationToken: token);
                     await _gamesData.GetAllGamesName(client, update, token);
-                    SetState(person, ModeMain.GetItem);
+                    await SetState(person, ModeMain.GetItem);
                     break;
 
             }
         }
+
+
     }
 }

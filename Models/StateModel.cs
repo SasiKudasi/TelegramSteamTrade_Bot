@@ -1,9 +1,7 @@
 ﻿using LinqToDB.Mapping;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
+using ColumnAttribute = LinqToDB.Mapping.ColumnAttribute;
+using TableAttribute = LinqToDB.Mapping.TableAttribute;
 
 namespace TelegramSteamTrade_Bot.Models
 {
@@ -13,15 +11,18 @@ namespace TelegramSteamTrade_Bot.Models
         [PrimaryKey, Identity]
         [Column("id")]
         public int Id { get; set; }
+        [ForeignKey("fk_userid")]
         [Column("userid")]
-        public int UserId { get; set; }        
+        public int UserId { get; set; }
 
         [Column(Name = "modemain"), DataType(LinqToDB.DataType.VarChar)]
         public ModeMain ModeMain { get; set; }
         [Column(Name = "modegame"), DataType(LinqToDB.DataType.VarChar)]
         public ModeGame ModeGame { get; set; }
         [Column("lastitem")]
-        public int LastItemState { get; set;}        
+        public int LastItemState { get; set; }
+        [Association(ThisKey = nameof(StateModel.UserId), OtherKey = nameof(UserModel.Id))]
+        public IEnumerable<UserModel> Users { get; set; } = new List<UserModel>();
     }
     public enum ModeMain
     {

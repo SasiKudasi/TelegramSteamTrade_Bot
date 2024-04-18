@@ -23,7 +23,7 @@ class Program
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
         var userChatId = update.Message!.Chat.Id;
-        var user = _userData.GetUser(userChatId);
+        var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
         if (user == null)
         {
             await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее", cancellationToken: token);
@@ -36,25 +36,32 @@ class Program
             switch (mode)
             {
                 case ModeMain.Start:
-                    await _userData.SendMenu(client, update, token);
+                    await SendMenu(client, update, token);
                     break;
                 case ModeMain.GetItem:
                     await _itemsData.ItemMenuAsync(client, update, token);
-                    _userData.SetState(userChatId, ModeMain.GetItem);
+                    await _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
                 case ModeMain.AddItem:
                     // _tracksData.AddItem(client, update, token);
-                    _userData.SetState(userChatId, ModeMain.Start);
+                    await _userData.SetState(userChatId, ModeMain.Start);
                     break;
                 case ModeMain.GetAllItem:
-                    await _tracksData.GetAllItemAsync(_userData.GetUser(userChatId), client, update, token);
-                    _userData.SetState(userChatId, ModeMain.Start);
+                    await _tracksData.GetAllItemAsync(user, client, update, token);
+                    await _userData.SetState(userChatId, ModeMain.Start);
                     break;
             }
         }
     }
 
-
+    public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    {
+        await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
+            "/check_item_price - если ты просто хочешь посмотреть цену на определенный предмет.\n" +
+            "/add_item_to_track - если ты хочешь отслеживать его цену.\n" +
+            "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
+            "/start - для возврата в главное меню.", cancellationToken: token);
+    }
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
     {

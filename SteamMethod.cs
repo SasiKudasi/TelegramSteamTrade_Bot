@@ -14,35 +14,35 @@ namespace TelegramSteamTrade_Bot
 
             using (var httpClient = new HttpClient())
             {
-                try
-                {
-                    HttpResponseMessage response = await httpClient.GetAsync(url);
+                HttpResponseMessage response = await httpClient.GetAsync(url);
 
-                    if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var jsonResponse = JsonSerializer.Deserialize<GetRequestFields>(responseBody);
+                    if (jsonResponse != null)
                     {
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        var jsonResponse = JsonSerializer.Deserialize<GetRequestFields>(responseBody);
-                        if (jsonResponse != null)
+                        try
                         {
-                            var lowestPrice = jsonResponse.lowest_price.ToString();
+                            var lowestPrice = jsonResponse.lowest_price.ToString();                            
                             bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out result);
                             ItemLowestPrice = result;
-                            
+                        }
+                        catch
+                        {
+                            result = 0.0;
                         }
                     }
-                    else                   
-                        result = 0.0;                    
                 }
-                catch
-                {
+                else
                     result = 0.0;
-                }
+
                 return result;
-            }         
+            }
         }
-    }
-    public class GetRequestFields
-    {
-        public string lowest_price { get; set; }
+        public class GetRequestFields
+        {
+            public string lowest_price { get; set; }
+        }
     }
 }

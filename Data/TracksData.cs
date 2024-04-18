@@ -13,33 +13,44 @@ using static LinqToDB.SqlQuery.SqlPredicate;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    internal class TracksData : BaseData
+    internal class TracksData : BaseData, IWorkerWhithEntity
     {
         private SteamMethod _steam = new();
+        public async Task CreateNewEntity<T>(T entity) where T : class
+        {
+            await _db.InsertWithIdentityAsync(entity);
+        }
+        public Task<T> GetEntity<T>(string name) where T : class
+        {
+            throw new NotImplementedException();
+        }
         public async Task AddItemAsync(ITelegramBotClient client, Update update, CancellationToken token, UserModel user)
         {
             var userParams = await GetMode(user);
             var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);
             if (GetTrack(user, userParams.LastItemState))
             {
-                var track = new TrackModel()
+                await CreateNewEntity(new TrackModel()
                 {
                     UserId = userParams.UserId,
                     ItemId = userParams.LastItemState,
                     LastActualPrice = item.ItemPrice
-                };
-                _db.Insert(track);
+                });
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
                 $"Предмет успешно добавлен.",
                 cancellationToken: token);
-                SetState(user.ChatId, 0);
+                await SetState(user.ChatId, 0);
+                await SetState(user.ChatId, ModeGame.Initial);
+                await SetState(user.ChatId, ModeMain.Start);
             }
             else
             {
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
                 $"Вы уже отслеживаете данный предмет.",
                 cancellationToken: token);
-                SetState(user.ChatId, 0);
+                await SetState(user.ChatId, 0);
+                await SetState(user.ChatId, ModeGame.Initial);
+                await SetState(user.ChatId, ModeMain.Start);
             }
         }
 
@@ -89,17 +100,5 @@ namespace TelegramSteamTrade_Bot.Data
             var result = ((actualPrice - lastPrice) / lastPrice) * 100;
             return Math.Round(result, 3);
         }
-        public void NewTrack(ItemModel? items, UserModel? userModel)
-        {
-            var track = new TrackModel()
-            {
-                ItemId = items!.Id,
-                UserId = userModel!.Id,
-                LastActualPrice = items.ItemPrice
-            };
-            _db.Insert(track);
-        }
-
-
     }
 }

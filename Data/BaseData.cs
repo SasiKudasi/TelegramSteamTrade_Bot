@@ -10,52 +10,49 @@ namespace TelegramSteamTrade_Bot.Data
     public class BaseData
     {
         protected DbContext _db = new();
-        public void SetState(long person, object mode)
+        public async Task SetState(long person, object mode)
         {
             var userData = new UsersData();
-            var user = userData.GetUser(person);
+            var user = await userData.GetEntity<UserModel>(person.ToString());
 
             if (mode is (ModeMain))
             {
                 var modeMain = (ModeMain)mode;
-                var a = _db.State.Where(u => u.UserId == user.Id).
-                     Set(m => m.ModeMain, modeMain).
-                     Update();
-
+                await _db.State.Where(u => u.UserId == user.Id).
+                      Set(m => m.ModeMain, modeMain).
+                      UpdateAsync();
             }
-            if (mode is (ModeGame))
+            else if (mode is (ModeGame))
             {
                 var modeGame = (ModeGame)mode;
-                _db.State.Where(u => u.UserId == user.Id).
+                await _db.State.Where(u => u.UserId == user.Id).
                     Set(m => m.ModeGame, modeGame).
-                    Update();
+                    UpdateAsync();
             }
-            if (mode is (int))
+            else if (mode is (int))
             {
                 var lastItem = (int)mode;
-                _db.State.Where(u => u.UserId == user.Id).
+                await _db.State.Where(u => u.UserId == user.Id).
                     Set(m => m.LastItemState, lastItem).
-                    Update();
+                    UpdateAsync();
             }
         }
         public async Task<StateModel> GetMode(UserModel user)
         {
-            var userState = _db.State.FirstOrDefault(x => x.UserId == user.Id);
+            StateData _stateData = new();
+            var userState = await _stateData.GetEntity<StateModel>(user.Id.ToString());
             if (userState == null)
             {
-                var state = new StateData();
-                userState = await state.CreateStateForNewUser(user);
+                await _stateData.CreateNewEntity(new StateModel()
+                {
+                    UserId = user.Id,
+                    ModeMain = ModeMain.Start,
+                    ModeGame = ModeGame.Initial,
+                    LastItemState = 0
+                });
+                userState = await _stateData.GetEntity<StateModel>(user.Id.ToString());
             }
             return userState!;
         }
-        public async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
-        {
-            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-                "/check_item_price - если ты просто хочешь посмотреть цену на определенный предмет.\n" +
-                "/add_item_to_track - если ты хочешь отслеживать его цену.\n" +
-                "/check_tracking_item - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
-                "/start - для возврата в главное меню.", cancellationToken: token);
-        }
-
     }
 }
