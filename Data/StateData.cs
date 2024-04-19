@@ -10,7 +10,7 @@ using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    internal class StateData : BaseData, IWorkerWhithEntity
+    internal class StateData : BaseData, IWorkWhithEntity
     {
         public async Task CreateNewEntity<T>(T entity) where T : class
         {

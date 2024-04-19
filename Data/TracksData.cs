@@ -1,19 +1,11 @@
 ﻿using LinqToDB;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramSteamTrade_Bot.Models;
-using static LinqToDB.SqlQuery.SqlPredicate;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    internal class TracksData : BaseData, IWorkerWhithEntity
+    internal class TracksData : BaseData, IWorkWhithEntity
     {
         private SteamMethod _steam = new();
         public async Task CreateNewEntity<T>(T entity) where T : class
@@ -22,23 +14,30 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public async Task<T> GetEntity<T>(string name) where T : class
         {
-            long person = 0;
-            if (ParsStringIntoLong(name, out person))
+            long id = 0;
+            if (ParsStringIntoLong(name, out id))
             {
-                var personParams = await _db.State.FirstOrDefaultAsync(x => x.UserId == person);
-                if (personParams != null)
-                {
-                    var result = await _db.Track.FirstOrDefaultAsync(x => x.ItemId == personParams.LastItemState) as T;
-                    return result;
-                }
+                var personTracks = await _db.Track.Where(x => x.UserId == id).ToListAsync();
+                return personTracks as T;
             }
             return null;
-        }        
+        }
+        private async Task<bool> CheckItemInTracking(UserModel user, int lastItemState)
+        {
+            var allTrackingItems = await GetEntity<List<TrackModel>>(user.Id.ToString());
+            var res = false;
+            allTrackingItems.ForEach(x =>
+            {
+                if (x.ItemId == lastItemState)
+                    res = true;
+            });
+            return res;
+        }
         public async Task AddItemAsync(ITelegramBotClient client, Update update, CancellationToken token, UserModel user)
         {
             var userParams = await GetMode(user);
-            var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);           
-            if (await GetEntity<TrackModel>(user.Id.ToString()) == null)
+            var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);
+            if (!await CheckItemInTracking(user, userParams.LastItemState))
             {
                 await CreateNewEntity(new TrackModel()
                 {
@@ -107,9 +106,45 @@ namespace TelegramSteamTrade_Bot.Data
             var result = ((actualPrice - lastPrice) / lastPrice) * 100;
             return Math.Round(result, 3);
         }
-
-        void DeliteTrackingItem(int itemId)
+        public async Task DeliteTrackingItem(UserModel user, ITelegramBotClient client, Update update, CancellationToken token)
         {
+            var msg = update.Message.Text;
+
+            if (msg == "/delete_tracking_item")
+                return;
+            int id = 0;
+            var pars = int.TryParse(msg, out id);
+            if (pars)
+            {
+                var allTrackingItems = await GetEntity<List<TrackModel>>(user.Id.ToString());
+                if (id >= allTrackingItems.Count)
+                {
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                     "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов",
+                      cancellationToken: token);
+                }
+                else
+                {
+                    var item = allTrackingItems[id];
+                    if (item != null)
+                    {
+                        await _db.DeleteAsync(item);
+                        await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                         $"Предмет был успешно удален из вашего списка отслеживаемых предметов.",
+                         cancellationToken: token);
+                    }
+                    else
+                    {
+                        await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                         "Такого предмета нет в вашем списке остлеживаемых предметов.",
+                          cancellationToken: token);
+                    }
+                }
+            }
+            else
+                await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                     "Вы ввели что то некорректное.",
+                      cancellationToken: token);
 
         }
     }

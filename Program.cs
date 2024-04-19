@@ -42,9 +42,9 @@ class Program
                     await _itemsData.ItemMenuAsync(client, update, token);
                     await _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
-                case ModeMain.DeleteItem:
-                    
-                    await _userData.SetState(userChatId, ModeMain.Start);
+                case ModeMain.DeleteItem: 
+                   await _tracksData.DeliteTrackingItem(user, client, update, token);
+                    await _userData.SetState(userChatId, ModeMain.DeleteItem);
                     break;
                 case ModeMain.GetAllItem:
                     await _tracksData.GetAllItemAsync(user, client, update, token);

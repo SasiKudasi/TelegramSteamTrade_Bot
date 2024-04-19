@@ -46,7 +46,7 @@ namespace TelegramSteamTrade_Bot.Data
                 return false;
             }
             else
-            {
+            {                
                 var id = long.TryParse(str, out nam);
                 if (id)
                     return true;

@@ -7,7 +7,7 @@ using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    public class ItemsData : BaseData, IWorkerWhithEntity
+    public class ItemsData : BaseData, IWorkWhithEntity
     {
         private SteamMethod _steam = new();
         private GamesData _gamesData = new();

@@ -8,7 +8,7 @@ using Update = Telegram.Bot.Types.Update;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    public class UsersData : BaseData, IWorkerWhithEntity
+    public class UsersData : BaseData, IWorkWhithEntity
     {
         private GamesData _gamesData = new();
         private StateData _stateData = new();
@@ -58,8 +58,9 @@ namespace TelegramSteamTrade_Bot.Data
                 case "/start":
                     await SetState(person, ModeMain.Start);
                     break;
-                case "/add_item_to_track":
-                    await SetState(person, ModeMain.Start);
+                case "/delete_tracking_item":
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Введите номер предмета, который хотите удалить", cancellationToken: token);
+                    await SetState(person, ModeMain.DeleteItem);
                     break;
                 case "/check_tracking_items":
                     await SetState(person, ModeMain.GetAllItem);
