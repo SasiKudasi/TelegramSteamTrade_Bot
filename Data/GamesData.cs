@@ -15,11 +15,14 @@ namespace TelegramSteamTrade_Bot.Data
             {
                 await client.SendTextMessageAsync(update.Message!.Chat.Id, $"{game.Name}\n", cancellationToken: token);
             }
+            _db.Close();
         }
         public int GetGameAppId(string? text)
         {
             var gameAppId = _db.Games.FirstOrDefault(gameId => gameId.Name == text)!.AppId;
+            _db.Close();
             return gameAppId;
+
         }
     }
 }

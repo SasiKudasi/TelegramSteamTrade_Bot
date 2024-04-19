@@ -22,6 +22,7 @@ namespace TelegramSteamTrade_Bot.Data
                 await _db.State.Where(u => u.UserId == user.Id).
                       Set(m => m.ModeMain, modeMain).
                       UpdateAsync();
+
             }
             else if (mode is (ModeGame))
             {
@@ -37,6 +38,7 @@ namespace TelegramSteamTrade_Bot.Data
                     Set(m => m.LastItemState, lastItem).
                     UpdateAsync();
             }
+            _db.Close();
         }
         public bool ParsStringIntoLong(string str, out long nam)
         {

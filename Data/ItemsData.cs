@@ -18,12 +18,13 @@ namespace TelegramSteamTrade_Bot.Data
         public async Task CreateNewEntity<T>(T entity) where T : class
         {
             await _db.InsertWithIdentityAsync(entity);
-
+            _db.Close();
         }
         public async Task<T> GetEntity<T>(string name) where T : class
         {
-            return await _db.Items.FirstOrDefaultAsync(item => item.Name == name) as T;
-
+            var item = await _db.Items.FirstOrDefaultAsync(item => item.Name == name) as T;           
+            _db.Close();
+            return item;
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
@@ -118,6 +119,7 @@ namespace TelegramSteamTrade_Bot.Data
                 _db.Items.Delete(n => n.Name == item.Name);
                 await SetState(person, ModeGame.Initial);
                 await SetState(person, 0);
+                _db.Close();
             }
             else
             {
@@ -129,6 +131,7 @@ namespace TelegramSteamTrade_Bot.Data
                     , cancellationToken: token);
                 _db.Items.Where(p => p.Name == item.Name)
               .Set(m => m.ItemPrice, price).Update();
+                _db.Close();
             }
 
         }

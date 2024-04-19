@@ -11,6 +11,7 @@ namespace TelegramSteamTrade_Bot.Data
         public async Task CreateNewEntity<T>(T entity) where T : class
         {
             await _db.InsertWithIdentityAsync(entity);
+            _db.Close();
         }
         public async Task<T> GetEntity<T>(string name) where T : class
         {
@@ -18,6 +19,7 @@ namespace TelegramSteamTrade_Bot.Data
             if (ParsStringIntoLong(name, out id))
             {
                 var personTracks = await _db.Track.Where(x => x.UserId == id).ToListAsync();
+                _db.Close();
                 return personTracks as T;
             }
             return null;
@@ -61,6 +63,7 @@ namespace TelegramSteamTrade_Bot.Data
                 await SetState(user.ChatId, ModeGame.Initial);
                 await SetState(user.ChatId, ModeMain.Start);
             }
+            _db.Close();
         }
 
         internal async Task GetAllItemAsync(UserModel userModel, ITelegramBotClient client, Update update, CancellationToken token)
@@ -98,7 +101,8 @@ namespace TelegramSteamTrade_Bot.Data
                 total += distinct;
             }
             await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                  $"Ваш инвентарь изменился на {Math.Round(total, 3)}%",
+                  $"Ваш инвентарь изменился на {Math.Round(total, 3)}%\n" +
+                  $"/start",
                   cancellationToken: token);
         }
         double PercentProfit(double lastPrice, double actualPrice)
@@ -120,30 +124,21 @@ namespace TelegramSteamTrade_Bot.Data
                 if (id >= allTrackingItems.Count)
                 {
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                     "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов",
+                     "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов\nПопробуйте еще раз",
                       cancellationToken: token);
                 }
                 else
                 {
                     var item = allTrackingItems[id];
-                    if (item != null)
-                    {
-                        await _db.DeleteAsync(item);
-                        await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                         $"Предмет был успешно удален из вашего списка отслеживаемых предметов.",
-                         cancellationToken: token);
-                    }
-                    else
-                    {
-                        await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                         "Такого предмета нет в вашем списке остлеживаемых предметов.",
-                          cancellationToken: token);
-                    }
+                    await _db.DeleteAsync(item);
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                     $"Предмет был успешно удален из вашего списка отслеживаемых предметов.",
+                     cancellationToken: token);
                 }
             }
             else
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                     "Вы ввели что то некорректное.",
+                     "Вы ввели что то некорректное.\nПопробуйте еще раз",
                       cancellationToken: token);
 
         }

@@ -15,6 +15,7 @@ namespace TelegramSteamTrade_Bot.Data
         public async Task CreateNewEntity<T>(T entity) where T : class
         {
             await _db.InsertWithIdentityAsync(entity);
+            _db.Close();
         }
 
         public async Task<T> GetEntity<T>(string name) where T : class
@@ -22,9 +23,14 @@ namespace TelegramSteamTrade_Bot.Data
             long person = 0;
             var id = long.TryParse(name, out person);
             if (!id)
+
                 return null;
             else
-                return await _db.State.FirstOrDefaultAsync(x => x.UserId == person) as T;
+            {
+                var a = await _db.State.FirstOrDefaultAsync(x => x.UserId == person) as T;
+                _db.Close();
+                return a;
+            }
         }
     }
 }

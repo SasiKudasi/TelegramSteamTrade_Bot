@@ -43,6 +43,7 @@ namespace TelegramSteamTrade_Bot.Data
                         ChatId = person,
                     });
                 }
+                _db.Close();
                 return user!;
             }
             else
