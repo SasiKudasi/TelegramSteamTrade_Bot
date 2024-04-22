@@ -73,6 +73,29 @@ namespace TelegramSteamTrade_Bot.Data
             }
             return userState!;
         }
+        public async Task SwitchStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
+        {
+            var msg = update.Message!.Text;
+            long person = update.Message.Chat.Id;
+            switch (msg)
+            {
+                case "Старт":
+                    await SetState(person, ModeMain.Start);
+                    break;
+                case "Удалить предмет из списка":
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Введите номер предмета, который хотите удалить", cancellationToken: token);
+                    await SetState(person, ModeMain.DeleteItem);
+                    break;
+                case "Посмотреть цены на предметы из личного списка":
+                    await SetState(person, ModeMain.GetAllItem);
+                    break;
+                case "Посмотреть актуальную цену на предмет":
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Выберите игру, предметы которой хотите посмотерть", cancellationToken: token);
+                    await _gamesData.GetAllGamesName(client, update, token);
+                    await SetState(person, ModeMain.GetItem);
+                    break;
+            }
+        }
 
     }
 }

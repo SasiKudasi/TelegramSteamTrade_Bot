@@ -56,17 +56,17 @@ namespace TelegramSteamTrade_Bot.Data
             long person = update.Message.Chat.Id;
             switch (msg)
             {
-                case "/start":
+                case "Старт":
                     await SetState(person, ModeMain.Start);
                     break;
-                case "/delete_tracking_item":
+                case "Удалить предмет из списка":
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Введите номер предмета, который хотите удалить", cancellationToken: token);
                     await SetState(person, ModeMain.DeleteItem);
                     break;
-                case "/check_tracking_items":
+                case "Посмотреть цены на предметы из личного списка":
                     await SetState(person, ModeMain.GetAllItem);
                     break;
-                case "/check_item_price":
+                case "Посмотреть актуальную цену на предмет":
                     await client.SendTextMessageAsync(update.Message!.Chat.Id, "Выберите игру, предметы которой хотите посмотерть", cancellationToken: token);
                     await _gamesData.GetAllGamesName(client, update, token);
                     await SetState(person, ModeMain.GetItem);

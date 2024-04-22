@@ -2,6 +2,7 @@
 using Telegram.Bot.Polling;
 using TelegramSteamTrade_Bot.Models;
 using TelegramSteamTrade_Bot.Data;
+using TelegramSteamTrade_Bot;
 
 class Program
 {
@@ -56,11 +57,14 @@ class Program
 
     public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        await client.SendTextMessageAsync(update.Message!.Chat.Id, "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
+        await client.SendTextMessageAsync(update.Message!.Chat.Id, 
+            "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
             "/check_item_price - если ты хочешь посмотреть цену на определенный предмет и добавить его в свой список.\n" +
             "/check_tracking_items - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
             "/delete_tracking_item. - если ты хочешь удалить предмет из своего списка отслеживаемых предметов\n" +            
-            "/start - для возврата в главное меню.", cancellationToken: token);
+            "/start - для возврата в главное меню.", 
+            replyMarkup:  Keyboards.MainKeyboard(),
+            cancellationToken: token);
     }
 
     private static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken token)
