@@ -15,9 +15,12 @@ namespace TelegramSteamTrade_Bot.Data
         public async Task CreateNewEntity<T>(T entity) where T : class
         {
             await _db.InsertWithIdentityAsync(entity);
+
             var userModel = entity as UserModel;
+           
             if (userModel != null)
             {
+                userModel = await GetEntity<UserModel>(userModel.ChatId.ToString());
                 await _stateData.CreateNewEntity(new StateModel()
                 {
                     UserId = userModel.Id,
@@ -42,6 +45,7 @@ namespace TelegramSteamTrade_Bot.Data
                     {
                         ChatId = person,
                     });
+                    user = await _db.Users.FirstOrDefaultAsync(x => x.ChatId == person) as T;
                 }
                 _db.Close();
                 return user!;
@@ -69,11 +73,11 @@ namespace TelegramSteamTrade_Bot.Data
                     await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "Посмотреть актуальную цену на предмет":
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id, 
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
                         "Выберите игру, предметы которой хотите посмотерть",
                         replyMarkup: Keyboards.GameKeyboard(),
                         cancellationToken: token);
-                   // await _gamesData.GetAllGamesName(client, update, token);
+                    // await _gamesData.GetAllGamesName(client, update, token);
                     await SetState(person, ModeMain.GetItem);
                     break;
             }

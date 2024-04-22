@@ -24,7 +24,7 @@ class Program
     }
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        
+
         switch (update.Type)
         {
             case UpdateType.Message:
@@ -36,7 +36,7 @@ class Program
                 var user = await _userData.GetEntity<UserModel>(userId.ToString());
                 await _itemsData.ItemMenuAsync(client, msg, userId, token);
                 break;
-        }       
+        }
     }
 
     private static async Task OnMessageText(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
@@ -44,34 +44,28 @@ class Program
         long userChatId = update.Message.Chat.Id;
 
         var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
-        if (user == null)
+        await _userData.SwitchStateAsync(client, update, token);
+        var userMode = await _userData.GetMode(user);
+        var mode = userMode.ModeMain;
+        switch (mode)
         {
-            await client.SendTextMessageAsync(update.Message!.Chat.Id, "Произошла непредвиденная ошибка, пожалуйста попробуйте позднее", cancellationToken: token);
+            case ModeMain.Start:
+                await SendMenu(client, update, token);
+                break;
+            case ModeMain.GetItem:
+                await _itemsData.ItemMenuAsync(client, update.Message.Text, userChatId, token);
+                await _userData.SetState(userChatId, ModeMain.GetItem);
+                break;
+            case ModeMain.DeleteItem:
+                await _tracksData.DeliteTrackingItem(user, client, update, token);
+                await _userData.SetState(userChatId, ModeMain.DeleteItem);
+                break;
+            case ModeMain.GetAllItem:
+                await _tracksData.GetAllItemAsync(user, client, update, token);
+                await _userData.SetState(userChatId, ModeMain.Start);
+                break;
         }
-        else
-        {
-            await _userData.SwitchStateAsync(client, update, token);
-            var userMode = await _userData.GetMode(user);
-            var mode = userMode.ModeMain;
-            switch (mode)
-            {
-                case ModeMain.Start:
-                    await SendMenu(client, update, token);
-                    break;
-                case ModeMain.GetItem:
-                    await _itemsData.ItemMenuAsync(client, update.Message.Text, userChatId, token);
-                    await _userData.SetState(userChatId, ModeMain.GetItem);
-                    break;
-                case ModeMain.DeleteItem:
-                    await _tracksData.DeliteTrackingItem(user, client, update, token);
-                    await _userData.SetState(userChatId, ModeMain.DeleteItem);
-                    break;
-                case ModeMain.GetAllItem:
-                    await _tracksData.GetAllItemAsync(user, client, update, token);
-                    await _userData.SetState(userChatId, ModeMain.Start);
-                    break;
-            }
-        }
+
     }
 
     public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)

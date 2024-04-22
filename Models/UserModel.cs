@@ -9,7 +9,7 @@ namespace TelegramSteamTrade_Bot.Models
         [Column("id")]
         public int Id { get; set; }
         [Column("chatid")]
-        public long ChatId { get; set; }       
+        public long ChatId { get; set; }        
     }
 
    

@@ -11,8 +11,8 @@ namespace TelegramSteamTrade_Bot.Models
         [PrimaryKey, Identity]
         [Column("id")]
         public int Id { get; set; }
-        [ForeignKey("fk_userid")]
         [Column("userid")]
+        [ForeignKey("fk_userid")]      
         public int UserId { get; set; }
 
         [Column(Name = "modemain"), DataType(LinqToDB.DataType.VarChar)]
