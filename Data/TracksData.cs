@@ -86,7 +86,8 @@ namespace TelegramSteamTrade_Bot.Data
                                 u.ChatId
                             };
             int itemNumber = 0;
-            var total = 0.0;
+            var lastTotal = 0.0;
+            var actualTotal = 0.0;
             foreach (var item in userItems)
             {
                 price = await _steam.SearchItemPriceAsync(item.GameId, item.Name);
@@ -98,10 +99,14 @@ namespace TelegramSteamTrade_Bot.Data
                    $"Изменение в цене: {distinct}%\n",
                    cancellationToken: token);
                 itemNumber++;
-                total += distinct;
+                lastTotal += item.LastActualPrice;
+                actualTotal += price;
             }
+
             await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                  $"Ваш инвентарь изменился на {Math.Round(total, 3)}%\n" +
+                  $"Общаяя стоимость предметов на момент добавления: {Math.Round(lastTotal, 3)}\n" +
+                  $"Актуальная стоимость: {Math.Round(actualTotal, 3)}\n" +
+                  $"Ваш инвентарь изменился на {PercentProfit(lastTotal, actualTotal)}%\n" +
                   $"/start",
                   cancellationToken: token);
         }
