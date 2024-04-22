@@ -3,6 +3,7 @@ using Telegram.Bot.Polling;
 using TelegramSteamTrade_Bot.Models;
 using TelegramSteamTrade_Bot.Data;
 using TelegramSteamTrade_Bot;
+using Telegram.Bot.Types.Enums;
 
 class Program
 {
@@ -23,7 +24,25 @@ class Program
     }
     private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        var userChatId = update.Message!.Chat.Id;
+        
+        switch (update.Type)
+        {
+            case UpdateType.Message:
+                await OnMessageText(client, update, token);
+                break;
+            case UpdateType.CallbackQuery:
+                var userId = update.CallbackQuery.From.Id;
+                var msg = update.CallbackQuery.Data;
+                var user = await _userData.GetEntity<UserModel>(userId.ToString());
+                await _itemsData.ItemMenuAsync(client, msg, userId, token);
+                break;
+        }       
+    }
+
+    private static async Task OnMessageText(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    {
+        long userChatId = update.Message.Chat.Id;
+
         var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
         if (user == null)
         {
@@ -40,11 +59,11 @@ class Program
                     await SendMenu(client, update, token);
                     break;
                 case ModeMain.GetItem:
-                    await _itemsData.ItemMenuAsync(client, update, token);
+                    await _itemsData.ItemMenuAsync(client, update.Message.Text, userChatId, token);
                     await _userData.SetState(userChatId, ModeMain.GetItem);
                     break;
-                case ModeMain.DeleteItem: 
-                   await _tracksData.DeliteTrackingItem(user, client, update, token);
+                case ModeMain.DeleteItem:
+                    await _tracksData.DeliteTrackingItem(user, client, update, token);
                     await _userData.SetState(userChatId, ModeMain.DeleteItem);
                     break;
                 case ModeMain.GetAllItem:
@@ -57,13 +76,11 @@ class Program
 
     public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        await client.SendTextMessageAsync(update.Message!.Chat.Id, 
+        await client.SendTextMessageAsync(update.Message!.Chat.Id,
             "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
-            "/check_item_price - если ты хочешь посмотреть цену на определенный предмет и добавить его в свой список.\n" +
-            "/check_tracking_items - если ты хочешь посмотреть актуальные цены на все предметы, что ты добавил.\n" +
-            "/delete_tracking_item. - если ты хочешь удалить предмет из своего списка отслеживаемых предметов\n" +            
-            "/start - для возврата в главное меню.", 
-            replyMarkup:  Keyboards.MainKeyboard(),
+            "В данный момент я нахожусь в разработке, но я уже кое что умею!\n" +
+            "Пожалуйста, выберите действие",
+            replyMarkup: Keyboards.MainKeyboard(),
             cancellationToken: token);
     }
 

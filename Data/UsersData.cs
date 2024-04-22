@@ -60,15 +60,20 @@ namespace TelegramSteamTrade_Bot.Data
                     await SetState(person, ModeMain.Start);
                     break;
                 case "Удалить предмет из списка":
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Введите номер предмета, который хотите удалить", cancellationToken: token);
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                        "Введите номер предмета, который хотите удалить",
+                        cancellationToken: token);
                     await SetState(person, ModeMain.DeleteItem);
                     break;
                 case "Посмотреть цены на предметы из личного списка":
                     await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "Посмотреть актуальную цену на предмет":
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id, "Выберите игру, предметы которой хотите посмотерть", cancellationToken: token);
-                    await _gamesData.GetAllGamesName(client, update, token);
+                    await client.SendTextMessageAsync(update.Message!.Chat.Id, 
+                        "Выберите игру, предметы которой хотите посмотерть",
+                        replyMarkup: Keyboards.GameKeyboard(),
+                        cancellationToken: token);
+                   // await _gamesData.GetAllGamesName(client, update, token);
                     await SetState(person, ModeMain.GetItem);
                     break;
             }

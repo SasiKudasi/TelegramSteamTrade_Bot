@@ -19,6 +19,7 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public int GetGameAppId(string? text)
         {
+
             var gameAppId = _db.Games.FirstOrDefault(gameId => gameId.Name == text)!.AppId;
             _db.Close();
             return gameAppId;

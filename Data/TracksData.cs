@@ -35,7 +35,7 @@ namespace TelegramSteamTrade_Bot.Data
             });
             return res;
         }
-        public async Task AddItemAsync(ITelegramBotClient client, Update update, CancellationToken token, UserModel user)
+        public async Task AddItemAsync(ITelegramBotClient client, long userChatId, CancellationToken token, UserModel user)
         {
             var userParams = await GetMode(user);
             var item = await _db.Items.FirstOrDefaultAsync(n => n.Id == userParams.LastItemState);
@@ -47,7 +47,7 @@ namespace TelegramSteamTrade_Bot.Data
                     ItemId = userParams.LastItemState,
                     LastActualPrice = item.ItemPrice
                 });
-                await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                await client.SendTextMessageAsync(user.ChatId,
                 $"Предмет успешно добавлен.",
                 cancellationToken: token);
                 await SetState(user.ChatId, 0);
@@ -56,7 +56,7 @@ namespace TelegramSteamTrade_Bot.Data
             }
             else
             {
-                await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                await client.SendTextMessageAsync(user.ChatId,
                 $"Вы уже отслеживаете данный предмет.",
                 cancellationToken: token);
                 await SetState(user.ChatId, 0);

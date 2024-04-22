@@ -14,11 +14,43 @@ namespace TelegramSteamTrade_Bot
                     new KeyboardButton [] {"Старт"},
                 })
             {
-                ResizeKeyboard = true,               
+                ResizeKeyboard = true,
 
             };
             return keyboardButton;
         }
+        public static InlineKeyboardMarkup GameKeyboard()
+        {
+            var keyboadrd = new InlineKeyboardMarkup(
+                new[]
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("CS2", "/cs2")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Dota2", "/dota2")
+                    }
+                });
+            return keyboadrd;
+        }
 
+        public static InlineKeyboardMarkup KonfirmKeyboard()
+        {
+            var keyboadrd = new InlineKeyboardMarkup(
+                new[]
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Да", "/yes")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Нет", "Старт")
+                    }
+                });
+            return keyboadrd;
+        }
     }
 }

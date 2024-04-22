@@ -22,15 +22,12 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public async Task<T> GetEntity<T>(string name) where T : class
         {
-            var item = await _db.Items.FirstOrDefaultAsync(item => item.Name == name) as T;           
+            var item = await _db.Items.FirstOrDefaultAsync(item => item.Name == name) as T;
             _db.Close();
             return item;
         }
-        public async Task ItemMenuAsync(ITelegramBotClient client, Update update, CancellationToken token)
+        public async Task ItemMenuAsync(ITelegramBotClient client, string msg, long userChatId, CancellationToken token)
         {
-
-            var msg = update.Message!.Text;
-            var userChatId = update.Message!.Chat.Id;
             var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
             var game = await GetMode(user);
             var gameMode = game.ModeGame;
@@ -57,29 +54,28 @@ namespace TelegramSteamTrade_Bot.Data
                        cancellationToken: token);
                             break;
                         case "/yes":
-                            await _tracksData.AddItemAsync(client, update, token, user);
+                            await _tracksData.AddItemAsync(client, userChatId, token, user);
                             break;
                     }
                 }
                 else
                 {
+
                     switch (gameMode)
                     {
                         case ModeGame.GetCSItems:
-                            await GetItems(client, update, token, _gamesData.GetGameAppId("/cs2"));
+                            await GetItems(client, userChatId, msg, token, _gamesData.GetGameAppId("/cs2"));
                             break;
                         case ModeGame.GetDotaItems:
-                            await GetItems(client, update, token, _gamesData.GetGameAppId("/dota2"));
+                            await GetItems(client, userChatId, msg, token, _gamesData.GetGameAppId("/dota2"));
                             break;
                     }
                 }
             }
         }
 
-        private async Task GetItems(ITelegramBotClient client, Update update, CancellationToken token, int gameID)
+        private async Task GetItems(ITelegramBotClient client, long userChatId, string msg, CancellationToken token, int gameID)
         {
-            var person = update.Message!.Chat.Id;
-            var msg = update.Message!.Text;
             if (msg == "/cs2" || msg == "/dota2")
                 return;
             else
@@ -95,43 +91,38 @@ namespace TelegramSteamTrade_Bot.Data
                 };
 
                 items = await GetEntity<ItemModel>(msg);
-                await GetItemWhithSteamPrice(client, update, token, items);
-                await SetState(person, items.Id);
-                await SetState(person, ModeGame.Initial);
+                await GetItemWhithSteamPrice(client, userChatId, token, items);
+                await SetState(userChatId, items.Id);
+                await SetState(userChatId, ModeGame.Initial);
 
             }
-        }    
+        }
 
-        private async Task GetItemWhithSteamPrice(ITelegramBotClient client, Update update, CancellationToken token, ItemModel? item)
+        private async Task GetItemWhithSteamPrice(ITelegramBotClient client, long userChatId, CancellationToken token, ItemModel? item)
         {
             if (item == null)
             {
                 return;
             }
-            var person = update.Message!.Chat.Id;
             var price = 0.0;
             price = await _steam.SearchItemPriceAsync(item.GameId, item.Name);
             if (_steam.ItemLowestPrice == 0.0)
             {
-                await client.SendTextMessageAsync(person,
+                await client.SendTextMessageAsync(userChatId,
                     "Похоже такой предмет на торговой площадке Steam отсутствует.\nПопробуйте еще раз.",
                     cancellationToken: token);
                 _db.Items.Delete(n => n.Name == item.Name);
-                await SetState(person, ModeGame.Initial);
-                await SetState(person, 0);
+                await SetState(userChatId, ModeGame.Initial);
+                await SetState(userChatId, 0);
                 _db.Close();
             }
             else
             {
-                await client.SendTextMessageAsync(person,
+                await client.SendTextMessageAsync(userChatId,
                     $"Актуальная цена {item.Name} на данный момент составляет {price}\n" +
-                    $"Хотите ли вы добавить этот предмет в отслеживаемые предметы?\n" +
-                    $"/yes - что бы добавить данный предмет в отслеживаемые.\n" +
-                    $"/start - что бы вернуться в меню."
-                    , cancellationToken: token);
-                _db.Items.Where(p => p.Name == item.Name)
-              .Set(m => m.ItemPrice, price).Update();
-                _db.Close();
+                    $"Хотите ли вы добавить этот предмет в отслеживаемые предметы?",
+                    replyMarkup: Keyboards.KonfirmKeyboard(),
+                    cancellationToken: token);
             }
 
         }
