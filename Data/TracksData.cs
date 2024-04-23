@@ -107,7 +107,7 @@ namespace TelegramSteamTrade_Bot.Data
                   $"Общаяя стоимость предметов на момент добавления: {Math.Round(lastTotal, 3)}\n" +
                   $"Актуальная стоимость: {Math.Round(actualTotal, 3)}\n" +
                   $"Ваш инвентарь изменился на {PercentProfit(lastTotal, actualTotal)}%\n",
-                  replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
+                  replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                   cancellationToken: token);
         }
         double PercentProfit(double lastPrice, double actualPrice)
@@ -130,7 +130,7 @@ namespace TelegramSteamTrade_Bot.Data
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
                      "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов\n" +
                      "Попробуйте еще раз или вернитесь в главное меню",
-                     replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
+                     replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                       cancellationToken: token);
                 }
                 else
@@ -140,7 +140,7 @@ namespace TelegramSteamTrade_Bot.Data
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
                      $"Предмет был успешно удален из вашего списка отслеживаемых предметов.\n " +
                      $"Введите следующий номер или вернитесь в главное меню",
-                      replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
+                      replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                      cancellationToken: token);
                 }
             }
@@ -148,7 +148,7 @@ namespace TelegramSteamTrade_Bot.Data
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
                      "Вы ввели что то некорректное.\n" +
                      "Попробуйте еще раз или вернитесь в главное меню",
-                     replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
+                     replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                       cancellationToken: token);
         }
     }

@@ -54,7 +54,6 @@ namespace TelegramSteamTrade_Bot.Data
 
         public async Task SwitchStateAsync(ITelegramBotClient client, string msg, long person, CancellationToken token)
         {
-
             switch (msg)
             {
                 case "Старт":
@@ -64,6 +63,7 @@ namespace TelegramSteamTrade_Bot.Data
                 case "Удалить предмет из списка":
                     await client.SendTextMessageAsync(person,
                         "Введите номер предмета, который хотите удалить",
+                         replyMarkup: new ReplyKeyboardRemove(),
                         cancellationToken: token);
                     await SetState(person, ModeMain.DeleteItem);
                     break;
@@ -71,28 +71,13 @@ namespace TelegramSteamTrade_Bot.Data
                     await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "Посмотреть актуальную цену на предмет":
-                    var game = new GamesData();
-
                     await client.SendTextMessageAsync(person,
                         "Выберите игру, предметы которой хотите посмотерть",
-                        replyMarkup: Keyboards.Keyboard(GamesData.GameKeyboard),
+                        replyMarkup: Keyboards.InlineKeyboard(GamesData.GameKeyboard),
                         cancellationToken: token);
                     await SetState(person, ModeMain.GetItem);
                     break;
             }
         }
-        public static InlineKeyboardButton[][] GoToStartBtn()
-        {
-            var btns = new InlineKeyboardButton[1][];
-            int i = 0;
-            btns[0] = new[]
-            {
-                    InlineKeyboardButton.WithCallbackData("Старт", "Старт")
-                };
-            i++;
-
-            return btns;
-        }
-
     }
 }

@@ -40,7 +40,7 @@ class Program
     {
         var user = await _userData.GetEntity<UserModel>(update.CallbackQuery.From.Id.ToString());
         await _userData.SwitchStateAsync(client, update.CallbackQuery.Data, update.CallbackQuery.From.Id, token);
-        var userMode = await _userData.GetMode(user);       
+        var userMode = await _userData.GetMode(user);
         var init = new Initial(update.CallbackQuery.From.Id, update.CallbackQuery.Data, userMode.ModeMain);
 
         switch (init.State)

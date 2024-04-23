@@ -79,7 +79,7 @@ namespace TelegramSteamTrade_Bot.Data
             }
         }
 
-        private async Task GetItems( long userChatId, string msg, CancellationToken token, int gameID)
+        private async Task GetItems(long userChatId, string msg, CancellationToken token, int gameID)
         {
             if (msg == "/cs2" || msg == "/dota2")
                 return;

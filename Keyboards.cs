@@ -22,7 +22,7 @@ namespace TelegramSteamTrade_Bot
             };
             return keyboardButton;
         }
-        public static InlineKeyboardMarkup Keyboard(Keyboard keyboard)
+        public static InlineKeyboardMarkup InlineKeyboard(Keyboard keyboard)
         {
             var keyboadrd = new InlineKeyboardMarkup(keyboard());
             return keyboadrd;
