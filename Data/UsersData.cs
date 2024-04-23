@@ -51,10 +51,9 @@ namespace TelegramSteamTrade_Bot.Data
                 return null;
         }
 
-        public async Task SwitchStateAsync(ITelegramBotClient client, Update update, CancellationToken token)
+        public async Task SwitchStateAsync(ITelegramBotClient client, string msg, long person, CancellationToken token)
         {
-            var msg = update.Message!.Text;
-            long person = update.Message.Chat.Id;
+            
             switch (msg)
             {
                 case "Старт":
@@ -62,7 +61,7 @@ namespace TelegramSteamTrade_Bot.Data
                     await SetState(person, ModeGame.Initial);
                     break;
                 case "Удалить предмет из списка":
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                    await client.SendTextMessageAsync(person,
                         "Введите номер предмета, который хотите удалить",
                         cancellationToken: token);
                     await SetState(person, ModeMain.DeleteItem);
@@ -71,7 +70,7 @@ namespace TelegramSteamTrade_Bot.Data
                     await SetState(person, ModeMain.GetAllItem);
                     break;
                 case "Посмотреть актуальную цену на предмет":
-                    await client.SendTextMessageAsync(update.Message!.Chat.Id,
+                    await client.SendTextMessageAsync(person,
                         "Выберите игру, предметы которой хотите посмотерть",
                         replyMarkup: Keyboards.GameKeyboard(),
                         cancellationToken: token);                    

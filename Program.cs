@@ -4,6 +4,7 @@ using TelegramSteamTrade_Bot.Models;
 using TelegramSteamTrade_Bot.Data;
 using TelegramSteamTrade_Bot;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types;
 
 class Program
 {
@@ -17,53 +18,66 @@ class Program
 
         var receiver = new ReceiverOptions
         {
-            AllowedUpdates = new Telegram.Bot.Types.Enums.UpdateType[] { },
+            AllowedUpdates = new UpdateType[] { },
         };
         bot.StartReceiving(updateHandler: Handler, pollingErrorHandler: ErrorHandler, receiverOptions: receiver);
         Console.ReadLine();
     }
-    private static async Task Handler(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    private static async Task Handler(ITelegramBotClient client, Update update, CancellationToken token)
     {
-
         switch (update.Type)
         {
             case UpdateType.Message:
                 await OnMessageText(client, update, token);
                 break;
             case UpdateType.CallbackQuery:
-                var userId = update.CallbackQuery.From.Id;
-                var msg = update.CallbackQuery.Data;
-                if (msg == "Старт")
-                    await SendMenu(client, userId, token);
-                else
-                    await _itemsData.ItemMenuAsync(client, msg, userId, token);
+                await OnMessageQuery(client, update, token);
+                break;
+        }
+    }
+
+    private static async Task OnMessageQuery(ITelegramBotClient client, Update update, CancellationToken token)
+    {
+        var user = await _userData.GetEntity<UserModel>(update.CallbackQuery.From.Id.ToString());
+        await _userData.SwitchStateAsync(client, update.CallbackQuery.Data, update.CallbackQuery.From.Id, token);
+        var userMode = await _userData.GetMode(user);       
+        var init = new Initial(update.CallbackQuery.From.Id, update.CallbackQuery.Data, userMode.ModeMain);
+
+        switch (init.State)
+        {
+            case ModeMain.Start:
+                await SendMenu(client, init.UserChatId, token);
+                break;
+            case ModeMain.GetItem:
+                await _itemsData.ItemMenuAsync(client, init.Message, init.UserChatId, token);
+                await _userData.SetState(init.UserChatId, ModeMain.GetItem);
                 break;
         }
     }
 
     private static async Task OnMessageText(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
-        long userChatId = update.Message.Chat.Id;
-        var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
-        await _userData.SwitchStateAsync(client, update, token);
+        var user = await _userData.GetEntity<UserModel>(update.Message.Chat.Id.ToString());
+        await _userData.SwitchStateAsync(client, update.Message.Text, update.Message.Chat.Id, token);
         var userMode = await _userData.GetMode(user);
-        var mode = userMode.ModeMain;
-        switch (mode)
+        var init = new Initial(update.Message.Chat.Id, update.Message.Text, userMode.ModeMain);
+
+        switch (init.State)
         {
             case ModeMain.Start:
-                await SendMenu(client, userChatId, token);
+                await SendMenu(client, init.UserChatId, token);
                 break;
             case ModeMain.GetItem:
-                await _itemsData.ItemMenuAsync(client, update.Message.Text, userChatId, token);
-                await _userData.SetState(userChatId, ModeMain.GetItem);
+                await _itemsData.ItemMenuAsync(client, update.Message.Text, init.UserChatId, token);
+                await _userData.SetState(init.UserChatId, ModeMain.GetItem);
                 break;
             case ModeMain.DeleteItem:
                 await _tracksData.DeliteTrackingItem(user, client, update, token);
-                await _userData.SetState(userChatId, ModeMain.DeleteItem);
+                await _userData.SetState(init.UserChatId, ModeMain.DeleteItem);
                 break;
             case ModeMain.GetAllItem:
                 await _tracksData.GetAllItemAsync(user, client, update, token);
-                await _userData.SetState(userChatId, ModeMain.Start);
+                await _userData.SetState(init.UserChatId, ModeMain.Start);
                 break;
         }
 
