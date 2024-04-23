@@ -111,10 +111,10 @@ namespace TelegramSteamTrade_Bot.Data
             if (_steam.ItemLowestPrice == 0.0)
             {
                 await _client.SendTextMessageAsync(userChatId,
-                    "Похоже такой предмет на торговой площадке Steam отсутствует.\nПопробуйте еще раз.",
+                    "Похоже такой предмет на торговой площадке Steam отсутствует.\n",                    
+                    replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                     cancellationToken: token);
-                _db.Items.Delete(n => n.Name == item.Name);
-                await SetState(userChatId, ModeGame.Initial);
+                _db.Items.Delete(n => n.Name == item.Name);                
                 await SetState(userChatId, 0);
                 _db.Close();
             }
