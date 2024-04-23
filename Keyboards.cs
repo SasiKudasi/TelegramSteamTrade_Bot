@@ -1,5 +1,4 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
-using TelegramSteamTrade_Bot.Data;
 
 namespace TelegramSteamTrade_Bot
 {

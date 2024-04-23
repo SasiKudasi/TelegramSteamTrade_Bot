@@ -2,7 +2,6 @@
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramSteamTrade_Bot.Models;
-using Update = Telegram.Bot.Types.Update;
 
 namespace TelegramSteamTrade_Bot.Data
 {

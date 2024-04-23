@@ -1,6 +1,4 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
+﻿using Telegram.Bot.Types.ReplyMarkups;
 using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
