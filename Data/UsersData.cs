@@ -1,9 +1,6 @@
 ﻿using LinqToDB;
-using System;
 using Telegram.Bot;
 using TelegramSteamTrade_Bot.Models;
-using static LinqToDB.Reflection.Methods.LinqToDB;
-using static LinqToDB.Reflection.Methods.LinqToDB.Insert;
 using Update = Telegram.Bot.Types.Update;
 
 namespace TelegramSteamTrade_Bot.Data

@@ -106,8 +106,7 @@ namespace TelegramSteamTrade_Bot.Data
             await client.SendTextMessageAsync(update.Message!.Chat.Id,
                   $"Общаяя стоимость предметов на момент добавления: {Math.Round(lastTotal, 3)}\n" +
                   $"Актуальная стоимость: {Math.Round(actualTotal, 3)}\n" +
-                  $"Ваш инвентарь изменился на {PercentProfit(lastTotal, actualTotal)}%\n" +
-                  $"/start",
+                  $"Ваш инвентарь изменился на {PercentProfit(lastTotal, actualTotal)}%",
                   cancellationToken: token);
         }
         double PercentProfit(double lastPrice, double actualPrice)

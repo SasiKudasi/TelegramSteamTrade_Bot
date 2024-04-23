@@ -9,15 +9,7 @@ namespace TelegramSteamTrade_Bot.Data
     {
 
         private static DbContext _db = new();
-        public async Task GetAllGamesName(ITelegramBotClient client, Update update, CancellationToken token)
-        {
-            var games = _db.Games.ToList();
-            foreach (var game in games)
-            {
-                await client.SendTextMessageAsync(update.Message!.Chat.Id, $"{game.Name}\n", cancellationToken: token);
-            }
-            _db.Close();
-        }
+       
         public int GetGameAppId(string? text)
         {
 

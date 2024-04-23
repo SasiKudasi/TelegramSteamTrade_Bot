@@ -33,8 +33,10 @@ class Program
             case UpdateType.CallbackQuery:
                 var userId = update.CallbackQuery.From.Id;
                 var msg = update.CallbackQuery.Data;
-                var user = await _userData.GetEntity<UserModel>(userId.ToString());
-                await _itemsData.ItemMenuAsync(client, msg, userId, token);
+                if (msg == "Старт")
+                    await SendMenu(client, userId, token);
+                else
+                    await _itemsData.ItemMenuAsync(client, msg, userId, token);
                 break;
         }
     }
@@ -42,7 +44,6 @@ class Program
     private static async Task OnMessageText(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
     {
         long userChatId = update.Message.Chat.Id;
-
         var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
         await _userData.SwitchStateAsync(client, update, token);
         var userMode = await _userData.GetMode(user);
@@ -50,7 +51,7 @@ class Program
         switch (mode)
         {
             case ModeMain.Start:
-                await SendMenu(client, update, token);
+                await SendMenu(client, userChatId, token);
                 break;
             case ModeMain.GetItem:
                 await _itemsData.ItemMenuAsync(client, update.Message.Text, userChatId, token);
@@ -68,9 +69,9 @@ class Program
 
     }
 
-    public static async Task SendMenu(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    public static async Task SendMenu(ITelegramBotClient client, long userChatId, CancellationToken token)
     {
-        await client.SendTextMessageAsync(update.Message!.Chat.Id,
+        await client.SendTextMessageAsync(userChatId,
             "Привет, я Бот, который поможет тебе с отслеживанием цен на внутриигровые предметы.\n" +
             "В данный момент я нахожусь в разработке, но я уже кое что умею!\n" +
             "Пожалуйста, выберите действие",

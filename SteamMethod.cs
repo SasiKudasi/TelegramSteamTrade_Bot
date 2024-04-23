@@ -11,7 +11,7 @@ namespace TelegramSteamTrade_Bot
         {
             string url = $"https://steamcommunity.com/market/priceoverview/?appid={gameId}&currency=5&market_hash_name={Uri.EscapeDataString(itemName)}";
             double result = 0.0;
-            string lowestPrice ="";
+            string lowestPrice = "";
             using (var httpClient = new HttpClient())
             {
                 HttpResponseMessage response = await httpClient.GetAsync(url);
@@ -20,19 +20,11 @@ namespace TelegramSteamTrade_Bot
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
                     var jsonResponse = JsonSerializer.Deserialize<GetRequestFields>(responseBody);
-                    if (jsonResponse != null)
+                    if (jsonResponse != null && jsonResponse.lowest_price != null)
                     {
-                        try
-                        {
-                            lowestPrice = jsonResponse.lowest_price.ToString();
-                        }
-                        catch
-                        {
-                          return  result = 0.0;
-                        }
+                        lowestPrice = jsonResponse.lowest_price.ToString();
                         bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out result);
-                            ItemLowestPrice = result;
-                       
+                        ItemLowestPrice = result;
                     }
                 }
                 else

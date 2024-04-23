@@ -3,12 +3,14 @@ using SteamWebAPI2.Interfaces;
 using System.IO;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
     public class ItemsData : BaseData, IWorkWhithEntity
     {
+        private ITelegramBotClient _client;
         private SteamMethod _steam = new();
         private GamesData _gamesData = new();
         private TracksData _tracksData = new();
@@ -28,6 +30,7 @@ namespace TelegramSteamTrade_Bot.Data
         }
         public async Task ItemMenuAsync(ITelegramBotClient client, string msg, long userChatId, CancellationToken token)
         {
+            _client = client;
             var user = await _userData.GetEntity<UserModel>(userChatId.ToString());
             var game = await GetMode(user);
             var gameMode = game.ModeGame;
@@ -44,6 +47,7 @@ namespace TelegramSteamTrade_Bot.Data
                             await client.SendTextMessageAsync(userChatId,
                                 "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
                                 "\nприм. AK-47 | Redline (Minimal Wear)",
+                                replyMarkup: new ReplyKeyboardRemove(),
                         cancellationToken: token);
                             break;
                         case "/dota2":
@@ -51,6 +55,7 @@ namespace TelegramSteamTrade_Bot.Data
                             await client.SendTextMessageAsync(userChatId,
                                "Пожалуйста, введите название предмета, цену которого хотите посмотреть" +
                                "\nприм. Totem of Deep Magma",
+                               replyMarkup: new ReplyKeyboardRemove(),
                        cancellationToken: token);
                             break;
                         case "/yes":
@@ -64,17 +69,17 @@ namespace TelegramSteamTrade_Bot.Data
                     switch (gameMode)
                     {
                         case ModeGame.GetCSItems:
-                            await GetItems(client, userChatId, msg, token, _gamesData.GetGameAppId("/cs2"));
+                            await GetItems(userChatId, msg, token, _gamesData.GetGameAppId("/cs2"));
                             break;
                         case ModeGame.GetDotaItems:
-                            await GetItems(client, userChatId, msg, token, _gamesData.GetGameAppId("/dota2"));
+                            await GetItems(userChatId, msg, token, _gamesData.GetGameAppId("/dota2"));
                             break;
                     }
                 }
             }
         }
 
-        private async Task GetItems(ITelegramBotClient client, long userChatId, string msg, CancellationToken token, int gameID)
+        private async Task GetItems( long userChatId, string msg, CancellationToken token, int gameID)
         {
             if (msg == "/cs2" || msg == "/dota2")
                 return;
@@ -91,14 +96,14 @@ namespace TelegramSteamTrade_Bot.Data
                 };
 
                 items = await GetEntity<ItemModel>(msg);
-                await GetItemWhithSteamPrice(client, userChatId, token, items);
+                await GetItemWhithSteamPrice(userChatId, token, items);
                 await SetState(userChatId, items.Id);
                 await SetState(userChatId, ModeGame.Initial);
 
             }
         }
 
-        private async Task GetItemWhithSteamPrice(ITelegramBotClient client, long userChatId, CancellationToken token, ItemModel? item)
+        private async Task GetItemWhithSteamPrice(long userChatId, CancellationToken token, ItemModel? item)
         {
             if (item == null)
             {
@@ -108,7 +113,7 @@ namespace TelegramSteamTrade_Bot.Data
             price = await _steam.SearchItemPriceAsync(item.GameId, item.Name);
             if (_steam.ItemLowestPrice == 0.0)
             {
-                await client.SendTextMessageAsync(userChatId,
+                await _client.SendTextMessageAsync(userChatId,
                     "Похоже такой предмет на торговой площадке Steam отсутствует.\nПопробуйте еще раз.",
                     cancellationToken: token);
                 _db.Items.Delete(n => n.Name == item.Name);
@@ -118,7 +123,7 @@ namespace TelegramSteamTrade_Bot.Data
             }
             else
             {
-                await client.SendTextMessageAsync(userChatId,
+                await _client.SendTextMessageAsync(userChatId,
                     $"Актуальная цена {item.Name} на данный момент составляет {price}\n" +
                     $"Хотите ли вы добавить этот предмет в отслеживаемые предметы?",
                     replyMarkup: Keyboards.KonfirmKeyboard(),
