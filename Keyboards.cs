@@ -3,6 +3,7 @@ using TelegramSteamTrade_Bot.Data;
 
 namespace TelegramSteamTrade_Bot
 {
+    delegate InlineKeyboardButton[][] Keyboard();
     static class Keyboards
     {
         public static ReplyKeyboardMarkup MainKeyboard()
@@ -21,9 +22,9 @@ namespace TelegramSteamTrade_Bot
             };
             return keyboardButton;
         }
-        public static InlineKeyboardMarkup GameKeyboard()
+        public static InlineKeyboardMarkup Keyboard(Keyboard keyboard)
         {
-            var keyboadrd = new InlineKeyboardMarkup(GamesData.GameKeyboard());
+            var keyboadrd = new InlineKeyboardMarkup(keyboard());
             return keyboadrd;
         }
 
@@ -42,6 +43,15 @@ namespace TelegramSteamTrade_Bot
                     }
                 });
             return keyboadrd;
+        }
+        public static InlineKeyboardButton[][] GoToStartBtn()
+        {
+            var btns = new InlineKeyboardButton[1][];
+            btns[0] = new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Старт", "Старт")
+            };
+            return btns;
         }
     }
 }

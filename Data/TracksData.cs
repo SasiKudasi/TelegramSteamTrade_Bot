@@ -107,6 +107,7 @@ namespace TelegramSteamTrade_Bot.Data
                   $"Общаяя стоимость предметов на момент добавления: {Math.Round(lastTotal, 3)}\n" +
                   $"Актуальная стоимость: {Math.Round(actualTotal, 3)}\n" +
                   $"Ваш инвентарь изменился на {PercentProfit(lastTotal, actualTotal)}%\n",
+                  replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
                   cancellationToken: token);
         }
         double PercentProfit(double lastPrice, double actualPrice)
@@ -117,8 +118,7 @@ namespace TelegramSteamTrade_Bot.Data
         public async Task DeliteTrackingItem(UserModel user, ITelegramBotClient client, Update update, CancellationToken token)
         {
             var msg = update.Message.Text;
-
-            if (msg == "/delete_tracking_item")
+            if (msg == "Удалить предмет из списка")
                 return;
             int id = 0;
             var pars = int.TryParse(msg, out id);
@@ -128,7 +128,9 @@ namespace TelegramSteamTrade_Bot.Data
                 if (id >= allTrackingItems.Count)
                 {
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                     "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов\nПопробуйте еще раз",
+                     "Вы ввели значение которое превышает колличество ваших отслеживаемых предметов\n" +
+                     "Попробуйте еще раз или вернитесь в главное меню",
+                     replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
                       cancellationToken: token);
                 }
                 else
@@ -136,15 +138,18 @@ namespace TelegramSteamTrade_Bot.Data
                     var item = allTrackingItems[id];
                     await _db.DeleteAsync(item);
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                     $"Предмет был успешно удален из вашего списка отслеживаемых предметов.",
+                     $"Предмет был успешно удален из вашего списка отслеживаемых предметов.\n " +
+                     $"Введите следующий номер или вернитесь в главное меню",
+                      replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
                      cancellationToken: token);
                 }
             }
             else
                 await client.SendTextMessageAsync(update.Message!.Chat.Id,
-                     "Вы ввели что то некорректное.\nПопробуйте еще раз",
+                     "Вы ввели что то некорректное.\n" +
+                     "Попробуйте еще раз или вернитесь в главное меню",
+                     replyMarkup: Keyboards.Keyboard(Keyboards.GoToStartBtn),
                       cancellationToken: token);
-
         }
     }
 }
