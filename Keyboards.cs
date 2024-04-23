@@ -1,4 +1,6 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
+using TelegramSteamTrade_Bot.Data;
+
 namespace TelegramSteamTrade_Bot
 {
     static class Keyboards
@@ -21,18 +23,9 @@ namespace TelegramSteamTrade_Bot
         }
         public static InlineKeyboardMarkup GameKeyboard()
         {
-            var keyboadrd = new InlineKeyboardMarkup(
-                new[]
-                {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("CS2", "/cs2")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Dota2", "/dota2")
-                    }
-                });
+            var keyboadrd = new InlineKeyboardMarkup(GamesData.GameKeyboard());
+
+
             return keyboadrd;
         }
 

@@ -76,8 +76,7 @@ namespace TelegramSteamTrade_Bot.Data
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,
                         "Выберите игру, предметы которой хотите посмотерть",
                         replyMarkup: Keyboards.GameKeyboard(),
-                        cancellationToken: token);
-                    // await _gamesData.GetAllGamesName(client, update, token);
+                        cancellationToken: token);                    
                     await SetState(person, ModeMain.GetItem);
                     break;
             }

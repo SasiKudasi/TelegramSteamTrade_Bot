@@ -1,13 +1,15 @@
-﻿using Telegram.Bot;
+﻿using System.Linq;
+using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    public class GamesData
+    public class GamesData : BaseData
     {
 
-        private DbContext _db = new();
+        private static DbContext _db = new();
         public async Task GetAllGamesName(ITelegramBotClient client, Update update, CancellationToken token)
         {
             var games = _db.Games.ToList();
@@ -24,6 +26,38 @@ namespace TelegramSteamTrade_Bot.Data
             _db.Close();
             return gameAppId;
 
+        }
+        public static InlineKeyboardButton[][] GameKeyboard()
+        {
+            var games = _db.Games.ToList();
+            _db.Close();
+            var btns = new InlineKeyboardButton[games.Count][];
+            int i = 0;
+            foreach (var game in games)
+            {
+                btns[i] = new[]
+                {
+                    InlineKeyboardButton.WithCallbackData(game.Name.Trim('/').ToUpper(), game.Name)
+                };             
+                i++;
+            }
+            return btns;
+        }
+        public static InlineKeyboardMarkup KonfirmKeyboard()
+        {
+            var keyboadrd = new InlineKeyboardMarkup(
+                new[]
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Да", "/yes")
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Нет", "Старт")
+                    }
+                });
+            return keyboadrd;
         }
     }
 }
