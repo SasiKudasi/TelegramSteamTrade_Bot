@@ -27,9 +27,9 @@ namespace TelegramSteamTrade_Bot.Data
                 return null;
             else
             {
-                var a = await _db.State.FirstOrDefaultAsync(x => x.UserId == person) as T;
+                var state = await _db.State.FirstOrDefaultAsync(x => x.UserId == person) as T;
                 _db.Close();
-                return a;
+                return state;
             }
         }
     }

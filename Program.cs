@@ -55,7 +55,7 @@ class Program
         }
     }
 
-    private static async Task OnMessageText(ITelegramBotClient client, Telegram.Bot.Types.Update update, CancellationToken token)
+    private static async Task OnMessageText(ITelegramBotClient client, Update update, CancellationToken token)
     {
         var user = await _userData.GetEntity<UserModel>(update.Message.Chat.Id.ToString());
         await _userData.SwitchStateAsync(client, update.Message.Text, update.Message.Chat.Id, token);
