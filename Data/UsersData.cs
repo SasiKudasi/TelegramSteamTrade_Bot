@@ -62,6 +62,7 @@ namespace TelegramSteamTrade_Bot.Data
             {
                 case "Старт":
                     await SetState(person, ModeMain.Start);
+                    await SetState(person, ModeGame.Initial);
                     break;
                 case "Удалить предмет из списка":
                     await client.SendTextMessageAsync(update.Message!.Chat.Id,

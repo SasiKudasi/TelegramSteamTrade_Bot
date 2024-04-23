@@ -24,8 +24,6 @@ namespace TelegramSteamTrade_Bot
         public static InlineKeyboardMarkup GameKeyboard()
         {
             var keyboadrd = new InlineKeyboardMarkup(GamesData.GameKeyboard());
-
-
             return keyboadrd;
         }
 

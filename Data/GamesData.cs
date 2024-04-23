@@ -1,12 +1,11 @@
-﻿using System.Linq;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramSteamTrade_Bot.Models;
 
 namespace TelegramSteamTrade_Bot.Data
 {
-    public class GamesData : BaseData
+    public class GamesData
     {
 
         private static DbContext _db = new();
@@ -42,22 +41,6 @@ namespace TelegramSteamTrade_Bot.Data
                 i++;
             }
             return btns;
-        }
-        public static InlineKeyboardMarkup KonfirmKeyboard()
-        {
-            var keyboadrd = new InlineKeyboardMarkup(
-                new[]
-                {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Да", "/yes")
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData("Нет", "Старт")
-                    }
-                });
-            return keyboadrd;
-        }
+        }       
     }
 }
