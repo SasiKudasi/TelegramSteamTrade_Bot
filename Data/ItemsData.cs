@@ -123,6 +123,9 @@ namespace TelegramSteamTrade_Bot.Data
             }
             else
             {
+                _db.Items.Where(p => p.Name == item.Name)
+                 .Set(m => m.ItemPrice, price).Update();
+                _db.Close();
                 await _client.SendTextMessageAsync(userChatId,
                     $"Актуальная цена {item.Name} на данный момент составляет {price}\n" +
                     $"Хотите ли вы добавить этот предмет в отслеживаемые предметы?",

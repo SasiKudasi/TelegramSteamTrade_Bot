@@ -49,6 +49,7 @@ namespace TelegramSteamTrade_Bot.Data
                 });
                 await client.SendTextMessageAsync(user.ChatId,
                 $"Предмет успешно добавлен.",
+                replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                 cancellationToken: token);
                 await SetState(user.ChatId, 0);
                 await SetState(user.ChatId, ModeGame.Initial);
@@ -58,6 +59,7 @@ namespace TelegramSteamTrade_Bot.Data
             {
                 await client.SendTextMessageAsync(user.ChatId,
                 $"Вы уже отслеживаете данный предмет.",
+                replyMarkup: Keyboards.InlineKeyboard(Keyboards.GoToStartBtn),
                 cancellationToken: token);
                 await SetState(user.ChatId, 0);
                 await SetState(user.ChatId, ModeGame.Initial);
