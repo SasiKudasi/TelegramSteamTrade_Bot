@@ -5,7 +5,7 @@ namespace TelegramSteamTrade_Bot
     public class SteamMethod
     {
         public double ItemLowestPrice { get; set; }
-        public string SteamMarketHashName { get; set; }
+        public List<string> SteamMarketHashName { get; set; }
 
         public async Task<double> SearchItemPriceAsync(int gameId, string itemName)
         {
@@ -25,6 +25,7 @@ namespace TelegramSteamTrade_Bot
                         lowestPrice = jsonResponse.lowest_price.ToString();
                         bool success = double.TryParse(lowestPrice.AsSpan(0, lowestPrice.IndexOf(" ")), out result);
                         ItemLowestPrice = result;
+
                     }
                 }
                 else
@@ -34,9 +35,10 @@ namespace TelegramSteamTrade_Bot
             }
         }
 
-        public static async Task<List<InventoryItem>> GetInventoryItemsAsync(string steamId, int appId, int contextId)
+        public async Task<List<InventoryItem>> GetInventoryItemsAsync(string steamId, int appId, int contextId)
         {
             string url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
+
             using (var httpClient = new HttpClient())
             {
                 HttpResponseMessage response = await httpClient.GetAsync(url);
@@ -44,6 +46,12 @@ namespace TelegramSteamTrade_Bot
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
                     var inventoryResponse = JsonSerializer.Deserialize<SteamInventoryResponse>(responseBody);
+                    var inventoryItems = inventoryResponse.descriptions;
+                    foreach (var item in inventoryItems)
+                    {
+                        if (item.marketable != 0)
+                            SteamMarketHashName.Add(item.market_hash_name);
+                    }
                     return inventoryResponse?.descriptions ?? new List<InventoryItem>();
                 }
                 else
@@ -52,6 +60,7 @@ namespace TelegramSteamTrade_Bot
                     return new List<InventoryItem>();
                 }
             }
+
         }
 
     }
@@ -84,5 +93,6 @@ namespace TelegramSteamTrade_Bot
         public string instanceid { get; set; }
         public string market_hash_name { get; set; }
         public string market_name { get; set; }
+        public int marketable { get; set; }
     }
 }
