@@ -33,7 +33,27 @@ namespace TelegramSteamTrade_Bot
                 return result;
             }
         }
-       
+
+        public static async Task<List<InventoryItem>> GetInventoryItemsAsync(string steamId, int appId, int contextId)
+        {
+            string url = $"https://steamcommunity.com/inventory/{steamId}/{appId}/{contextId}?l=english&count=5000";
+            using (var httpClient = new HttpClient())
+            {
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var inventoryResponse = JsonSerializer.Deserialize<SteamInventoryResponse>(responseBody);
+                    return inventoryResponse?.descriptions ?? new List<InventoryItem>();
+                }
+                else
+                {
+                    Console.WriteLine($"HTTP Error: {response.StatusCode}");
+                    return new List<InventoryItem>();
+                }
+            }
+        }
+
     }
     public class SteamMakretRequestFields
     {
