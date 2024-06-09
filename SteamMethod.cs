@@ -5,7 +5,7 @@ namespace TelegramSteamTrade_Bot
     public class SteamMethod
     {
         public double ItemLowestPrice { get; set; }
-
+        public string SteamMarketHashName { get; set; }
 
         public async Task<double> SearchItemPriceAsync(int gameId, string itemName)
         {
@@ -19,7 +19,7 @@ namespace TelegramSteamTrade_Bot
                 if (response.IsSuccessStatusCode)
                 {
                     string responseBody = await response.Content.ReadAsStringAsync();
-                    var jsonResponse = JsonSerializer.Deserialize<GetRequestFields>(responseBody);
+                    var jsonResponse = JsonSerializer.Deserialize<SteamMakretRequestFields>(responseBody);
                     if (jsonResponse != null && jsonResponse.lowest_price != null)
                     {
                         lowestPrice = jsonResponse.lowest_price.ToString();
@@ -33,9 +33,36 @@ namespace TelegramSteamTrade_Bot
                 return result;
             }
         }
-        public class GetRequestFields
-        {
-            public string lowest_price { get; set; }
-        }
+       
+    }
+    public class SteamMakretRequestFields
+    {
+        public string lowest_price { get; set; }
+    }
+
+    public class SteamInventoryResponse
+    {
+        public List<Asset> assets { get; set; }
+        public List<InventoryItem> descriptions { get; set; }
+        public int total_inventory_count { get; set; }
+        public int success { get; set; }
+    }
+
+    public class Asset
+    {
+        public long appid { get; set; }
+        public string contextid { get; set; }
+        public string assetid { get; set; }
+        public string classid { get; set; }
+        public string instanceid { get; set; }
+        public string amount { get; set; }
+    }
+
+    public class InventoryItem
+    {
+        public string classid { get; set; }
+        public string instanceid { get; set; }
+        public string market_hash_name { get; set; }
+        public string market_name { get; set; }
     }
 }
